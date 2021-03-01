@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+	<title>Api Test</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="keywords" content="css, library, drax, draxcss, light">
+	<meta name="description" content="An API tester">
+	<link rel="stylesheet" href="/apis/assets/drax.css">
+	<style>
+	.badge:after {
+	width: auto;
+    border-radius: 1.5em;
+    font-size:.7em;
+    padding:.2em .5em;
+    background: inherit;
+	}
+    </style>
+	<script src="/apis/assets/vue.global.prod.js"></script>
+	
+</head>
+<body>
+	<div id="APP"class="p-4">
+		<h2>API Test <span class="small text-secondary"><small>v.0.1.0</small></span></h2>
+		<hr class="mt-0">
+		<div class="row six-lg">
+			
+			<section class="collections border-bottom pr-3 pb-3">
+				<v-text v-model="collections.search" class="small" placeholder="Collections"></v-text>
+				
+				<div class="small py-2">
+					<div class="group small">
+						<button class="secondary" @click="collections.filter=''">All</button>
+						<button class="primary" @click="collections.filter='GET'">GET</button>
+						<button class="success" @click="collections.filter='POST'">POST</button>
+						<button class="warning" @click="collections.filter='PUT'">PUT</button>
+						<button class="error" @click="collections.filter='DELETE'">DELETE</button>
+					</div>
+				</div>
+				
+				<div class="overflow-y" style="max-height:65vh">
+					<button v-for="col in filteredCollections" :class="methodClass[col.method]+' small badge pr-5 mr-3'" @click="setForm(col)" :data-badge="col.method">
+						{{ col.url.split('?')[0] }}
+					</button>
+				</div>
+				
+			</section>
+			
+			<div class="fill row one two-lg">
+				<section class="form px-3 border-left">
+					<div class="row gap four">
+						<div>
+							<v-select v-model="form.method" :options="['GET','POST','PUT','DELETE']" placeholder="Method"></v-select>
+						</div>
+						<div class="fill">
+							<v-text v-model="form.url" class="small" placeholder="URL"></v-text>
+						</div>
+					</div>
+					
+					<div class="border-bottom my-2"></div>
+					<div v-show="!['GET','DELETE'].includes(form.method)" class="small border">
+						<div class="row gap four">
+							<span class="py-0">Type</span>
+							<span class="py-0">Name</span>
+							<span class="py-0">Value</span>
+						</div>
+						<div v-for="opt in form.options" class="row gap four">
+							<v-select v-model="opt.type" :options="['text','file']" class="large"></v-select>
+							<v-text v-model="opt.key"></v-text>
+							<div class="fill">
+								<v-text v-if="opt.type=='text'" v-model="opt.value"></v-text>
+								<v-file v-else v-model="opt.value"></v-file>
+							</div>
+							
+						</div>
+					</div>
+					<button v-if="loading" class="small muted">Loading ... </button>
+					<button v-else class="small secondary" @click="submit">Send</button>
+					<pre class="small overflow-y" style="max-height:30vh;white-space:pre-wrap">{{ formRequest }}</pre>
+				</section>
+					
+					
+				<section class="result small pl-3 border-left">
+					<div v-if="status" class="group large">
+						<span :class="(status.ok ? 'info': 'error')+' label'">{{ status.status }}</span>
+						<span :class="(status.ok ? 'info': 'error')+' label'">{{ status.statusText }}</span>
+					</div>
+					<br>
+					
+					<label>Token</label>
+					<textarea class="small">{{ token }}</textarea>
+					
+					<label>Header</label>
+					<textarea class="small" style="height:150px">{{ header }}</textarea>
+					<br>
+					<label>Response</label>
+					<textarea class="small" style="height:300px">{{ response }}</textarea>
+				</section>
+			</div>
+				
+		</div>
+		
+	</div>
+	
+	<script src="/apis/collections.js"></script>
+	<script>
+		const app = Vue.createApp({
+			data(){
+				return {
+					baseurl : 'localhost:8000',
+					status	: null,
+					token : null,
+					header : null,
+					response: null,
+					loading : false,
+					form 	: {
+						method :'GET',
+						url :'',
+						body:{},
+						options : [
+							{ type: 'text', key:'', value:''},
+						]
+					},
+					methodClass:{
+						'GET' : '',
+						'POST' : 'success',
+						'PUT' : 'warning',
+						'DELETE' : 'error',
+					},
+					collections : {
+						search 	: '',
+						filter	: '',
+						data	: collections
+					}
+				};
+			},
+			watch:{
+				'form.options':{
+					handler(val){
+						var body = {};
+						var filled;
+						val.forEach(opt=>{
+							if(opt.key==''){
+								filled = true;
+							}
+							else{
+								body[opt.key] = opt.value;
+							}
+						});
+						
+						this.form.body = body;
+						if(!filled){
+							this.form.options.push({key:'',type:'text',value:''});
+						}
+					},
+					deep:true
+				},
+			},
+			computed:{
+				filteredCollections(){
+					var isExists = d => {
+						var searched = d.url.includes(this.collections.search);
+						var filtered = d.method.includes(this.collections.filter);
+						return searched && filtered;
+					};
+					return this.collections.data.filter(isExists);
+				},
+				formRequest(){
+					var form = Object.assign({}, this.form);
+					delete form.options;
+					return form;
+				}				
+			},
+			methods:{
+				setForm(collection){
+					if(!collection.body){
+						collection.body = {};
+					}
+					this.form = Object.assign({}, collection);
+					var options = Object.keys(collection.body).map(key=>{
+						return {type:'text', key:key, value:collection.body[key]};
+					});
+					this.form.options = options;
+				},
+				setData(form){	
+					var formData = new FormData();
+					Object.keys(form).forEach(name=>{
+						var value = form[name];
+						if(typeof value !=='undefined' && value !='undefined'){
+							formData.append(name,value)
+						}
+					})
+					return formData;
+				},
+				submit(){
+					this.loading = true;
+					var form = Object.assign({},this.form);
+					if(['GET','DELETE'].includes(form.method)){
+						// form.url += '?' + (new URLSearchParams(form.body)).toString();
+						body	= null;
+					}else{
+						body	= this.setData(form.body);
+					}
+					
+					fetch(form.url,{
+						method	: form.method,
+						body	: body,
+						headers	: {Authorization : 'Bearer '+ this.token}
+					}).then(status=>{
+						var headers = {};
+						status.headers.forEach((value, key)=>{
+							headers[key] = value;
+						});
+						this.status = status;
+						this.header = headers;
+						if(status.headers.has('jwt')){
+							this.token = status.headers.get('jwt');
+						}
+						if (status.ok) {
+							return status.json()
+						}else{
+							return status.text().then(err => Promise.reject(err));
+						}
+					}).then(response=>{
+						this.response = response;
+					}).catch(error=>{
+						this.response = error;
+						// console.log(error);
+					}).finally(_=>{
+						this.loading = false;
+					})
+					
+				}
+			}
+		});
+	</script>
+	<script src="/apis/assets/base.js"></script>
+	<script>
+		app.mount('#APP');		
+	</script>
+</body>
+</html>
