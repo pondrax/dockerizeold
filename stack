@@ -1,0 +1,28 @@
+#!/bin/sh
+
+echo "Docker $@"
+if [ "$1" = "generate" ]; then
+
+	docker-compose exec php chmod 777 /src/app/storage -R
+	docker-compose exec php cp /src/.env /src/app/.env
+	docker-compose exec php /src/app/artisan jwt:secret
+	docker-compose exec php /src/app/artisan migrate
+
+elif [ "$1" = "build" ]; then
+	docker-compose build
+
+elif [ "$1" = "start" ]; then
+	docker-compose up -d
+
+elif [ "$1" = "stop" ]; then
+	docker-compose down
+
+elif [ "$1" = "artisan" ]; then
+	docker-compose exec php "./$@"
+
+elif [ "$1" = "sh" ]; then
+	docker-compose exec php sh
+
+else
+	docker-compose exec "$@"
+fi

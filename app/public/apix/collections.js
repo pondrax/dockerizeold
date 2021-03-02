@@ -2,7 +2,7 @@ const collections = [
 	//Auth
 	{
 		method :'POST',
-		url : 'api/auth/login',
+		url : '/api/auth/login',
 		body : {
 			username : 'drax',
 			password : 'lumen123'
@@ -10,7 +10,7 @@ const collections = [
 	},
 	{
 		method :'POST',
-		url : 'api/auth/register',
+		url : '/api/auth/register',
 		body : {
 			username : 'test',
 			email	 : 'test@mail.com',
@@ -21,11 +21,11 @@ const collections = [
 	// Role
 	{
 		method :'GET',
-		url : 'api/app/role/read?search=&limit=5&page=1&sort=id&order=desc',
+		url : '/api/app/role/read?search=&limit=5&page=1&sort=id&order=desc',
 	},
 	{
 		method :'POST',
-		url : 'api/app/role',
+		url : '/api/app/role',
 		body : {
 			role : 'Role name',
 			description	 : 'Role description',
@@ -33,7 +33,7 @@ const collections = [
 	},
 	{
 		method :'PUT',
-		url : 'api/app/role/5',
+		url : '/api/app/role/5',
 		body : {
 			role : 'Role name edit',
 			description	 : 'Role description edit',
@@ -41,17 +41,17 @@ const collections = [
 	},
 	{
 		method :'DELETE',
-		url : 'api/app/role/5'
+		url : '/api/app/role/5'
 	},
 	
 	// User
 	{
 		method :'GET',
-		url : 'api/app/user/read?search=&limit=5&page=1&sort=id&order=desc',
+		url : '/api/app/user/read?search=&limit=5&page=1&sort=id&order=desc',
 	},
 	{
 		method :'POST',
-		url : 'api/app/user',
+		url : '/api/app/user',
 		body : {
 			username : 'user name',
 			email : 'user@email.com',
@@ -60,7 +60,7 @@ const collections = [
 	},
 	{
 		method :'PUT',
-		url : 'api/app/user/5',
+		url : '/api/app/user/5',
 		body : {
 			user : 'user name edit',
 			description	 : 'user description edit',
@@ -68,17 +68,17 @@ const collections = [
 	},
 	{
 		method :'DELETE',
-		url : 'api/app/user/5'
+		url : '/api/app/user/5'
 	},
 	
 	// Menu
 	{
 		method :'GET',
-		url : 'api/app/menu/read?search=&limit=5&page=1&sort=id&order=desc',
+		url : '/api/app/menu/read?search=&limit=5&page=1&sort=id&order=desc',
 	},
 	{
 		method :'POST',
-		url : 'api/app/menu',
+		url : '/api/app/menu',
 		body : {
 			menu : 'menu name',
 			description	 : 'menu description',
@@ -86,7 +86,7 @@ const collections = [
 	},
 	{
 		method :'PUT',
-		url : 'api/app/menu/5',
+		url : '/api/app/menu/5',
 		body : {
 			menu : 'menu name edit',
 			description	 : 'menu description edit',
@@ -94,17 +94,17 @@ const collections = [
 	},
 	{
 		method :'DELETE',
-		url : 'api/app/menu/5'
+		url : '/api/app/menu/5'
 	},
 	
 	// Route
 	{
 		method :'GET',
-		url : 'api/app/route/read?search=&limit=5&page=1&sort=id&order=desc',
+		url : '/api/app/route/read?search=&limit=5&page=1&sort=id&order=desc',
 	},
 	{
 		method :'POST',
-		url : 'api/app/route',
+		url : '/api/app/route',
 		body : {
 			route : 'route name',
 			description	 : 'route description',
@@ -112,7 +112,7 @@ const collections = [
 	},
 	{
 		method :'PUT',
-		url : 'api/app/route/5',
+		url : '/api/app/route/5',
 		body : {
 			route : 'route name edit',
 			description	 : 'route description edit',
@@ -120,6 +120,6 @@ const collections = [
 	},
 	{
 		method :'DELETE',
-		url : 'api/app/route/5'
+		url : '/api/app/route/5'
 	},
 ];

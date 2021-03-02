@@ -2,30 +2,31 @@ version: '3'
 services:
     web:
         image: nginx:1.19-alpine
+        working_dir: /src/app
         volumes:
-            - ./.docker/conf/nginx/default.conf:/etc/nginx/conf.d/default.conf
-            - ./.docker/logs:/var/log/nginx
-            - ./src:/app
+            - ./docker/conf/nginx/default.conf:/etc/nginx/conf.d/default.conf
+            - ./docker/logs:/var/log/nginx
+            - .:/src
         ports:
             - 80:80
         restart: always
         depends_on:
             - php
             - db
-        env_file:
-            - .env
             
     php:
         build: .
         restart: always
+        working_dir: /src/app
         volumes:
-            - ./.docker/conf/php/php.ini:/usr/local/etc/php/conf.d/php.ini
-            - ./src:/app
+            - ./docker/conf/php/php.ini:/usr/local/etc/php/conf.d/php.ini
+            - .:/src
             
     composer:
         image: composer
+        working_dir: /src/app
         volumes:
-            - ./src:/app
+            - .:/src
         command: install --ignore-platform-reqs
         
     db:
@@ -38,5 +39,5 @@ services:
         ports:
             - 5432:5432
         volumes:
-            - ./.docker/conf/postgres/:/docker-entrypoint-initdb.d/
+            - ./docker/conf/postgres/:/docker-entrypoint-initdb.d/
     
