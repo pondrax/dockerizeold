@@ -13,6 +13,7 @@ services:
         depends_on:
             - php
             - db
+            - composer
             
     php:
         build: .
@@ -22,13 +23,6 @@ services:
             - ./docker/conf/php/php.ini:/usr/local/etc/php/conf.d/php.ini
             - .:/src
             
-    composer:
-        image: composer
-        working_dir: /src/app
-        volumes:
-            - .:/src
-        command: install --ignore-platform-reqs
-        
     db:
         image: postgres:11.1-alpine
         restart: always
@@ -41,3 +35,11 @@ services:
         volumes:
             - ./docker/conf/postgres/:/docker-entrypoint-initdb.d/
     
+
+    composer:
+        image: composer
+        working_dir: /src/app
+        volumes:
+            - .:/src
+        command: install --ignore-platform-reqs
+        

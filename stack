@@ -3,10 +3,12 @@
 echo "Docker $@"
 if [ "$1" = "generate" ]; then
 
-	docker-compose exec php chmod 777 /src/app/storage -R
+	docker-compose build
+	docker-compose exec php chown www-data:www-data /src/app/storage -R
 	docker-compose exec php cp /src/.env /src/app/.env
 	docker-compose exec php /src/app/artisan jwt:secret
 	docker-compose exec php /src/app/artisan migrate
+	docker-compose up -d
 
 elif [ "$1" = "build" ]; then
 	docker-compose build
@@ -16,6 +18,9 @@ elif [ "$1" = "start" ]; then
 
 elif [ "$1" = "stop" ]; then
 	docker-compose down
+
+elif [ "$1" = "composer" ]; then
+	docker-compose exec composer "./$@"
 
 elif [ "$1" = "artisan" ]; then
 	docker-compose exec php "./$@"
