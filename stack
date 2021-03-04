@@ -19,7 +19,7 @@ elif [ "$1" = "stop" ]; then
 	docker-compose down
 
 elif [ "$1" = "composer" ]; then
-	docker-compose exec composer "./$@"
+	docker-compose exec php "$@"
 
 elif [ "$1" = "artisan" ]; then
 	docker-compose exec php "./$@"

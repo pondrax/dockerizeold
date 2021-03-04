@@ -17,3 +17,5 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
+
+$router->get('send_mail' ,'App\MailController@mail');

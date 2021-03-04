@@ -21,7 +21,16 @@
 </head>
 <body>
 	<div id="APP"class="p-4">
-		<h2>API Test <span class="small text-secondary"><small>v.0.1.0</small></span></h2>
+		<div class="row six-lg">
+			<div class="fill">
+				<h2>API Test <span class="small text-secondary"><small>v.0.1.0</small></span></h2>
+			</div>
+			<div class="text-right pt-3">
+				<a href="/apix/info.php" target="_blank">PHP INFO</a>
+				-
+				<a href="/apix/adminer.php" target="_blank">ADMINER</a>
+			</div>
+		</div>
 		<hr class="mt-0">
 		<div class="row six-lg">
 			
@@ -84,6 +93,9 @@
 					<div v-if="status" class="group large">
 						<span :class="(status.ok ? 'info': 'error')+' label'">{{ status.status }}</span>
 						<span :class="(status.ok ? 'info': 'error')+' label'">{{ status.statusText }}</span>
+						&nbsp;
+						&nbsp;
+						<span :class="(status.ok ? 'info': 'error')+' label'">{{ status.time/1000 }} s</span>
 					</div>
 					<br>
 					
@@ -193,6 +205,7 @@
 					return formData;
 				},
 				submit(){
+					var time = new Date().getTime();
 					this.loading = true;
 					var form = Object.assign({},this.form);
 					if(['GET','DELETE'].includes(form.method)){
@@ -207,10 +220,12 @@
 						body	: body,
 						headers	: {Authorization : 'Bearer '+ this.token}
 					}).then(status=>{
+						// console.log(status)
 						var headers = {};
 						status.headers.forEach((value, key)=>{
 							headers[key] = value;
 						});
+						status.time = new Date().getTime() - time;
 						this.status = status;
 						this.header = headers;
 						if(status.headers.has('jwt')){
