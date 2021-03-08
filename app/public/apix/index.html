@@ -48,9 +48,14 @@
 				</div>
 				
 				<div class="overflow-y" style="max-height:65vh">
-					<button v-for="col in filteredCollections" :class="methodClass[col.method]+' small badge pr-5 mr-3'" @click="setForm(col)" :data-badge="col.method">
-						{{ col.url.split('?')[0] }}
-					</button>
+					<div v-for="mode,key in filteredCollections">
+						<h4>{{key}}</h4>
+						<div class="pl-2 border-left">
+							<button v-for="col in mode" :class="methodClass[col.method]+' small badge pr-5 mr-3'" @click="setForm(col)" :data-badge="col.method">
+								{{ col.url.split('?')[0] }}
+							</button>
+						</div>
+					</div>
 				</div>
 				
 			</section>
@@ -114,7 +119,7 @@
 		
 	</div>
 	
-	<script src="/apix/collections.js"></script>
+	<script src="/apix/collections.js?v1"></script>
 	<script>
 		const app = Vue.createApp({
 			data(){
@@ -170,12 +175,18 @@
 			},
 			computed:{
 				filteredCollections(){
-					var isExists = d => {
-						var searched = d.url.includes(this.collections.search);
-						var filtered = d.method.includes(this.collections.filter);
-						return searched && filtered;
-					};
-					return this.collections.data.filter(isExists);
+					var obj = {};
+					Object.keys(this.collections.data).forEach(key=>{
+						var collections = this.collections.data[key];
+						
+						var isExists = d => {
+							var searched = d.url.includes(this.collections.search);
+							var filtered = d.method.includes(this.collections.filter);
+							return searched && filtered;
+						};
+						obj[key] = collections.filter(isExists);
+					});
+					return obj;
 				},
 				formRequest(){
 					var form = Object.assign({}, this.form);
@@ -251,7 +262,7 @@
 	</script>
 	<script src="/apix/assets/base.js"></script>
 	<script>
-		app.mount('#APP');		
+		const APP = app.mount('#APP');		
 	</script>
 </body>
 </html>
