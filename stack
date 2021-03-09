@@ -8,6 +8,7 @@ if [ "$1" = "generate" ]; then
 	docker-compose exec php cp /src/.env /src/app/.env
 	docker-compose exec php /src/app/artisan jwt:secret
 	docker-compose exec php /src/app/artisan migrate
+	docker-compose exec php composer install
 
 elif [ "$1" = "build" ]; then
 	docker-compose build

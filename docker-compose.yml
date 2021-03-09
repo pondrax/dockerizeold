@@ -9,13 +9,12 @@ services:
             - ./docker/logs/lumen:/src/app/storage
             - .:/src
         ports:
-            - 8080:80
+            - 8081:80
         restart: always
         depends_on:
-            - php
             - db
-            - composer
-            
+            - php
+
     php:
         build: .
         restart: always
@@ -23,7 +22,7 @@ services:
         volumes:
             - ./docker/conf/php/php.ini:/usr/local/etc/php/conf.d/php.ini
             - .:/src
-            
+     
     db:
         image: postgres:11.1-alpine
         restart: always
@@ -32,15 +31,7 @@ services:
             - POSTGRES_USERNAME=${DB_USERNAME}
             - POSTGRES_PASSWORD=${DB_PASSWORD}
         ports:
-            - 5432:5432
+            - 5434:5432
         volumes:
             - ./docker/conf/postgres/:/docker-entrypoint-initdb.d/
-    
-
-    composer:
-        image: composer
-        working_dir: /src/app
-        volumes:
-            - .:/src
-        command: install --ignore-platform-reqs
-        
+          
