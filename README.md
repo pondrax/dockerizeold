@@ -54,10 +54,10 @@ Some of stack shortcut instead of using docker-compose. Be surre to add this scr
 	- `./stack stop` 
 		Stop the service
 		
-	- `./stack artisan` 
+	- `./stack artisan <cmd>` 
 		Simple shortcut to execute lumen artisan
 		
-	- `./stack composer` 
+	- `./stack composer <cmd>` 
 		Simple shortcut to execute composer
 		
 	- `./stack sh` 
