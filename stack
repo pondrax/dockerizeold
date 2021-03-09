@@ -2,13 +2,16 @@
 
 echo "Docker $@"
 if [ "$1" = "generate" ]; then
-
+	if [ ! -f ".env" ]; then
+		cp .env.example .env
+	fi
+	
 	docker-compose up -d
+	docker-compose exec php composer install
 	docker-compose exec php chown www-data:www-data /src/app/storage -R
 	docker-compose exec php cp /src/.env /src/app/.env
 	docker-compose exec php /src/app/artisan jwt:secret
 	docker-compose exec php /src/app/artisan migrate
-	docker-compose exec php composer install
 
 elif [ "$1" = "build" ]; then
 	docker-compose build
