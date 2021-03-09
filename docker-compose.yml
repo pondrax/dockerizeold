@@ -9,7 +9,7 @@ services:
             - ./docker/logs/lumen:/src/app/storage
             - .:/src
         ports:
-            - 8081:80
+            - 8080:80
         restart: always
         depends_on:
             - db
