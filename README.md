@@ -10,6 +10,7 @@ It exposes services:
 * web (nginx:1.19-alpine)
 * php (hermsi/alpine-fpm-php:7.4) 
 * db (postgres:11.1-alpine)
+* cache (redis:6.2-alpine)
 * composer
 
 ## Install prerequisites

@@ -8,7 +8,6 @@ if [ "$1" = "generate" ]; then
 	
 	docker-compose up -d
 	docker-compose exec php composer install
-	docker-compose exec php chown www-data:www-data /src/app/storage -R
 	docker-compose exec php cp /src/.env /src/app/.env
 	docker-compose exec php /src/app/artisan jwt:secret
 	docker-compose exec php /src/app/artisan migrate
