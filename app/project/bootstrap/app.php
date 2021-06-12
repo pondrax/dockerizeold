@@ -6,8 +6,6 @@ require_once __DIR__.'/../vendor/autoload.php';
     dirname(__DIR__)
 ))->bootstrap();
 
-date_default_timezone_set(env('APP_TIMEZONE', 'UTC'));
-
 /*
 |--------------------------------------------------------------------------
 | Create The Application
@@ -23,8 +21,9 @@ $app = new Laravel\Lumen\Application(
     dirname(__DIR__)
 );
 
-$app->withFacades();
-
+$app->withFacades(true, [
+	'Illuminate\Support\Facades\Notification' => 'Notification',
+]);
 $app->withEloquent();
 
 /*
@@ -78,9 +77,12 @@ $app->configure('app');
 
 $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
-    'logger' => App\Http\Middleware\Logger::class,
-    'formdata' => App\Http\Middleware\FormData::class,
-    'throwerror' => App\Http\Middleware\ThrowError::class,
+    //'logger' => App\Http\Middleware\Logger::class,
+    //'formdata' => App\Http\Middleware\FormData::class,
+]);
+
+$app->middleware([
+	App\Http\Middleware\Cors::class
 ]);
 
 /*
@@ -94,13 +96,19 @@ $app->routeMiddleware([
 |
 */
 
-// $app->register(App\Providers\AppServiceProvider::class);
+//$app->register(App\Providers\AppServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
-// $app->register(App\Providers\EventServiceProvider::class);
+ //$app->register(App\Providers\EventServiceProvider::class);
+
+$app->register(Illuminate\Mail\MailServiceProvider::class);
+$app->register(Illuminate\Notifications\NotificationServiceProvider::class);
 
 $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
-$app->register(Illuminate\Mail\MailServiceProvider::class);
+$app->register(Jackiedo\LogReader\LogReaderServiceProvider::class);
+
 $app->configure('mail');
+$app->alias('mail.manager', Illuminate\Mail\MailManager::class);
+$app->alias('mail.manager', Illuminate\Contracts\Mail\Factory::class);
 /*
 |--------------------------------------------------------------------------
 | Load The Application Routes
@@ -118,5 +126,5 @@ $app->router->group([
     require __DIR__.'/../routes/api.php';
     require __DIR__.'/../routes/web.php';
 });
-
+//var_dump($app);
 return $app;

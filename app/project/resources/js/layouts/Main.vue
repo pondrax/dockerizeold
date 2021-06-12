@@ -9,7 +9,7 @@
 				<NavMenu :collapse="collapse"></NavMenu>
 			</el-scrollbar>
 		</el-aside>
-		
+
 		<el-container>
 			<el-header height="55px">
 				<el-row>
@@ -31,13 +31,13 @@
 			</el-header>
 			<el-main>
 				<el-scrollbar>
-					<div style="min-height:75vh;padding:20px">
+					<div style="min-height:75vh;padding:10px 20px">
 						<keep-alive>
 							<component :is='$root.page'></component>
 						</keep-alive>
 					</div>
 					<div class="el-footer">
-						Copyright &copy;2021. 
+						Copyright &copy;2021.
 						{{ $config.name }} v{{ $config.version }}
 					</div>
 				</el-scrollbar>
@@ -46,18 +46,18 @@
 	</el-container>
 </template>
 
-<script>		
+<script>
 	import { defineAsyncComponent } from 'vue';
 	import { ElLoading } from 'element-plus';
-	
+
 	import NavMenu from './NavMenu.vue';
-	
+	//console.log(ElLoading);
 	const Pages = ()=>{
 		const pages = [
 			'dashboard',
 			'user',
 			'role',
-			'logs'
+			'log'
 		];
 		return pages.reduce((prev, key)=> {
 			let capitalizeKey = key.charAt(0).toUpperCase() + key.slice(1);
@@ -66,12 +66,12 @@
 				delay: 200,
 				timeout: 3000,
 				loadingComponent: ElLoading
-			}); 
+			});
 			return prev;
 		}, {});
 	}
-	
-	
+
+
 	export default {
 		data() {
 			return {

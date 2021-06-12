@@ -49,9 +49,9 @@ if (! function_exists('mix')) {
      *
      * @throws \Exception
      */
-     
-     
-     
+
+
+
     function mix($path, $manifest = false, $shouldHotReload = false){
 		if (! $manifest) static $manifest;
 		if (! $shouldHotReload) static $shouldHotReload;
@@ -79,7 +79,7 @@ if (! function_exists('mix')) {
 			);
 		}
 		$HMR_PORT = isset($_ENV['MIX_HMR'])? $_ENV['MIX_HMR']: 8080;
-		
+
 		return $shouldHotReload
 			? "http://localhost:{$HMR_PORT}{$manifest[$path]}"
 			: url($manifest[$path]);

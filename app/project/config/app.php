@@ -1,4 +1,5 @@
 <?php
 
 return [
+	'locale' => 'id'
 ];

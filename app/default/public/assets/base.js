@@ -67,15 +67,6 @@ app.component('v-file',{
 				<img v-if="type=='image'" :src="src" style="height:200px;object-fit:contain">
 				<iframe v-else :src="src" class="border-0 w-100" style="height:200px"></iframe>
 			</div>
-			<div :class="{'modal':true,'active':open}">
-				<div class="overlay absolute top-left bottom-right" @click="open=false"></div>
-				<article style="width:80vw">					
-					<div v-show="src!=null" class="border w-100 text-center text-muted">
-						<img v-if="type=='image'" :src="src" style="object-fit:contain">
-						<iframe v-else :src="src" class="border-0 w-100" style="height:80vh"></iframe>
-					</div>
-				</article>
-			</div>
 		</div>
 	`
 })

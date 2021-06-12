@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Base\Model;
 use Laravel\Lumen\Auth\Authorizable;
 use Illuminate\Auth\Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 
@@ -12,10 +13,10 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Model implements AuthenticatableContract, AuthorizableContract, JWTSubject
 {
-    use Authenticatable, Authorizable;
+    use Authenticatable, Authorizable, Notifiable;
 
 	protected $table = 'app_user';
-    
+
     /**
      * The attributes that are mass assignable.
      *
@@ -33,8 +34,8 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     protected $hidden = [
         'password',
     ];
-    
-    
+
+
 	public function validate($data, $rule, $message, $index){
 		$rules = [
 			'register' => [
@@ -49,7 +50,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 			'create' => [],
 			'update' => []
 		];
-		
+
 		return $rulels['register'];
 	}
 
@@ -72,8 +73,8 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     {
         return [];
     }
-    
-    
+
+
     public function role()
     {
         return $this->belongsTo('App\Models\Role');

@@ -15,10 +15,34 @@ require('./bootstrap');
 import App from './App.vue';
 import ElementPlus from 'element-plus';
 import 'element-plus/lib/theme-chalk/index.css';
+import Export from './components/Export.vue';
 
 const app = vue.createApp(App).use(ElementPlus);
 app.config.globalProperties.$config = config;
 
+const mixin = {
+	methods:{
+		url(endpoint){
+			return endpoint.indexOf('http')>-1 ? endpoint: this.$config.url + endpoint;
+		},
+		http(url){
+			return axios(url);
+		},
+		dayjs(date, format){
+			var list = {
+				date 		: 'YYYY-MM-DD',
+				datetime 	: 'YYYY-MM-DD HH:mm:ss',
+				time 		: 'HH:mm:ss',
+			};
+			format = format?
+						list[format]? list[format]: format
+						: list['date'];
+			return dayjs(date).format(format);
+		}
+	}
+};
+app.mixin(mixin);
+app.component('Export', Export);
 
 window.app = app.mount('#app');
 

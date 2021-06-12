@@ -13,13 +13,13 @@
 					<span v-text="menu.name"></span>
 				</template>
 			</el-menu-item>
-			
+
 			<el-submenu v-else :index="m.toString()">
 				<template #title>
 					<i :class="menu.icon"></i>
 					<span v-text="menu.name"></span>
 				</template>
-				
+
 				<el-menu-item v-for="(list, l) in menu.list" :index="(m+1)+'-'+(l+1)" @click="setPath(list.path)">
 					<span v-text="list.name"></span>
 				</el-menu-item>
@@ -28,7 +28,7 @@
 	</el-menu>
 </template>
 
-<script>	
+<script>
 	const appMenu = [
 		{ name:'Dashboard', icon:'el-icon-menu', path:'#!/dashboard/' },
 		{ name:'Data', icon:'el-icon-s-data', list: [
@@ -37,14 +37,14 @@
 		{ name:'Management', icon: 'el-icon-setting', list: [
 			{ name: 'User', path:'#!/user/' },
 			{ name: 'Role', path:'#!/role/' },
-			{ name: 'Logs', path:'#!/logs/' },
+			{ name: 'Log' , path:'#!/log/' },
 		]},
 		{ name:'Developer', icon: 'el-icon-set-up', list: [
 			{ name: 'Route', path:'#!/route/' },
 			{ name: 'Menu', path:'#!/menu/' },
 		]},
 	];
-	
+
 	export default {
 		props: ['collapse'],
 		data() {

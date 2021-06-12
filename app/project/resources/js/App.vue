@@ -5,17 +5,8 @@
 <script>
 
 	import Main from './layouts/Main.vue';
-	
-	const mixins = {
-		methods:{
-			http(url){
-				return axios(url);
-			}
-		}
-	};
-	
+
 	export default {
-		mixins: [mixins],
 		data(){
 			return {
 				user: {
