@@ -22,7 +22,7 @@ if(\Cache::has('ROUTES:API')){
 		$ROUTES = \DB::table('app_route')->where('prefix', 'api')->get();
 		\Cache::forever('ROUTES:API', $ROUTES);
 	}catch(\Exception $e){
-		\Log::debug($e);
+		\Log::debug(json_encode(['debug'=>'Set Route','error'=>$e]));
 	}
 }
 //var_dump($ROUTES);

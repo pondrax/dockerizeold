@@ -14,7 +14,7 @@
 
 <script>
 	import LogPane from './LogPane.vue';
-	import LogSystemPane from './LogSystemPane.vue';
+	import LogSystemPane from './LogsystemPane.vue';
 
 	export default {
 		data() {

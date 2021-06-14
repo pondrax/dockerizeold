@@ -48,10 +48,11 @@
 
 <script>
 	import { defineAsyncComponent } from 'vue';
-	import { ElLoading } from 'element-plus';
+	import Loading from '../components/Loading.vue';
+	import Error from '../components/Error.vue';
 
 	import NavMenu from './NavMenu.vue';
-	//console.log(ElLoading);
+
 	const Pages = ()=>{
 		const pages = [
 			'dashboard',
@@ -62,10 +63,11 @@
 		return pages.reduce((prev, key)=> {
 			let capitalizeKey = key.charAt(0).toUpperCase() + key.slice(1);
 			prev[key] = defineAsyncComponent({
-				loader: () => import('../pages/'+ capitalizeKey +'.vue'),
-				delay: 200,
+				loader: () => import('../pages/app/'+ capitalizeKey +'.vue'),
+				delay: 0,
 				timeout: 3000,
-				loadingComponent: ElLoading
+				errorComponent: Error,
+				loadingComponent: Loading
 			});
 			return prev;
 		}, {});

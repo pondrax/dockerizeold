@@ -11,7 +11,7 @@ class Model extends BaseModel
 {
 	use HasFactory, SoftDeletes;
 
-	protected $hidden 	= ['password'];
+	protected $hidden 	= ['password','deleted_at'];
 	protected $perPage 	= 10;
 	protected $dates 	= ['created_at', 'updated_at', 'deleted_at'];
 

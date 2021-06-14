@@ -38,7 +38,7 @@ class CreateRoute extends Migration
 2,POST,app/menu,App\MenuController@create,api,,,0,0
 2,PUT,app/menu/{id},App\MenuController@update,api,,,0,0
 2,DELETE,app/menu/{id},App\MenuController@delete,api,,,0,0
-3,GET,app/route/testing,App\RouteController@testing,api,,,0,0
+3,GET,app/route/collection,App\RouteController@collection,api,,,0,0
 3,GET,app/route/{read},App\RouteController@read,api,,,0,0
 3,POST,app/route,App\RouteController@create,api,,,0,0
 3,POST,app/route/generator,App\RouteController@generator,api,,,0,0

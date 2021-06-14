@@ -10,10 +10,14 @@ use Illuminate\Http\Request;
 class RouteController extends Controller
 {
 
-    public function testing($read = 'all'){
-        $result = Menu::with('route:menu_id,method,route,description')
-			->orderBy('num','asc')
-			->get();
+    public function collection($read = 'all'){
+        $result = [
+			'app' => Menu::select('id','menu','icon')
+				->has('route')
+				->with('route:menu_id,method,route,description')
+				->orderBy('num','asc')
+				->get()
+		];
         return $this->response($result);
     }
 
@@ -22,14 +26,20 @@ class RouteController extends Controller
         return $this->response($result);
     }
 
+    public function generate(Request $request){
+		$data	= Route::validate($request, 'save');
+		$result	= Route::insert($data);
+        return $this->response($data);
+    }
+
     public function create(Request $request){
-		$data	= Route::validate($request, 'create');
+		$data	= Route::validate($request, 'save');
 		$result	= Route::insert($data);
         return $this->response($data);
     }
 
     public function update(Request $request, $id){
-		$data 	= Route::validate($request, 'update', $id);
+		$data 	= Route::validate($request, 'save', $id);
         $result = Route::where('id',$id)->update($data);
 		return $this->response(['message'=>"Updated ($id)"]);
     }

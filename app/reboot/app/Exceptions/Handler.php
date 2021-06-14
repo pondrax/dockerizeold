@@ -68,7 +68,7 @@ class Handler extends ExceptionHandler
 				'message' => __('exception.validation.message', [
 					'error' => implode(",",$exception->validator->messages()->all())
 				]),
-				'errors' => $exception->validator->errors()->getMessages(),            
+				'errors' => $exception->validator->errors()->getMessages(),
 			];
         }
 
@@ -96,7 +96,7 @@ class Handler extends ExceptionHandler
 		$response['status'] = [
 			'success' => strpos((string)$code, '2'),
 			'code' => $code,
-			'text' => __('status.'.$code)		
+			'text' => __('status.'.$code)
 		];
 		if ($debugEnabled) {
 			$response['exception'] = get_class($exception);

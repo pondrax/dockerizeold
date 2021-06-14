@@ -21,38 +21,26 @@
 	body:not(.mobile) .overflow-y:hover {
     -webkit-margin-end: 0;
 }
-	label{padding:0;}
-.input {
-    padding: 3px 7px;
-}
     </style>
 	<script src="/assets/vue.global.prod.js"></script>
 </head>
 <body>
-	<div id="APP"class="px-4">
-		<div class="row four-lg">
-			<div class="fill p-0">
-				<h3>API Test <span class="small text-secondary"><small>v.0.2.0</small></span></h3>
+	<div id="APP"class="p-4">
+		<div class="row six-lg">
+			<div class="fill">
+				<h2>API Test <span class="small text-secondary"><small>v.0.2.0</small></span></h2>
 			</div>
-			<div class="text-right pt-3 pb-0">
+			<div class="text-right pt-3">
 				<a href="/info.php" target="_blank">PHP INFO</a>
 				-
 				<a href="/adminer.php" target="_blank">ADMINER</a>
 			</div>
 		</div>
-		<hr class="m-0 mb-2">
+		<hr class="mt-0">
 		<div class="row six-lg">
 
 			<section class="collections border-bottom pr-3 pb-3">
-				<div style="margin:3px 0 0" class="small">Collections</div>
-				<div class="row gap four">
-					<div class="fill pb-0 pr-0">
-						<v-text v-model="collections.search" class="small" placeholder=""></v-text>
-					</div>
-					<div class="pb-0 pl-0">
-						<button @click="getCollection()" type="button" class="maroon small m-0 px-1">Fetch</button>
-					</div>
-				</div>
+				<v-text v-model="collections.search" class="small" placeholder="Collections"></v-text>
 
 				<div class="small py-2">
 					<div class="group small">
@@ -73,17 +61,19 @@
 				</div>
 
 
-				<div class="overflow-y" style="max-height:70vh;padding-bottom:50px">
+				<div class="overflow-y" style="max-height:80vh">
 					<div v-for="mode,key in filteredCollections">
-						<h5 style="line-height:.5">{{key}}</h5>
-						<div class="pl-2 border-left small">
-							<div v-for="menu in mode" >
-								<div v-text="menu.menu" class="pt-2 mt-2 border-top"></div>
-								<div v-for="col in menu.route">
-									<button @click="setForm(col)" :class="methodClass[col.method]+' small badge pr-5 mr-3'" :data-badge="col.method">
-										{{ col.route }}
+						<h4>{{key}}</h4>
+						<div class="pl-2 border-left">
+							<div v-for="col in mode" :data-tooltip="col.description">
+								<template v-if="col.method=='separator'">
+									<hr class="my-1">
+								</template>
+								<template v-else>
+									<button :class="methodClass[col.method]+' small badge pr-5 mr-3'" @click="setForm(col)" :data-badge="col.method">
+										{{ col.url.split('?')[0] }}
 									</button>
-								</div>
+								</template>
 							</div>
 						</div>
 					</div>
@@ -93,84 +83,71 @@
 
 			<div class="fill row one two-lg">
 				<section class="form px-3 border-left" @keyup.enter="submit">
-					<div style="margin:3px 0 0" class="small">Base url</div>
-					<div class="row gap four">
-						<div class="fill pb-0 pr-0">
-							<v-text v-model="baseurl" class="small" placeholder="" label=""></v-text>
-						</div>
-						<div class="pb-0 pl-0">
-
-							<button v-if="loading" class="small muted m-0 px-2">. . . . .</button>
-							<template v-else>
-								<button v-if="!form.external" class="small secondary m-0 px-2" @click.prevent="submit">Send</button>
-							</template>
-							<a v-if="form.external" :href="form.route" class="button small m-0 px-2" target="_blank">External</a>
-
-						</div>
-					</div>
+					<v-text v-model="baseurl" class="small" placeholder="Base URL"></v-text>
 <!--
 					<div class="secondary p-3" style="height:50px">{{ form.description }}</div>
 -->
-					<div class="row gap four px-1">
-						<div class="p-0">
+					<div class="row gap four">
+						<div>
 							<v-select v-model="form.method" :options="['GET','POST','PUT','DELETE']" placeholder="Method"></v-select>
 						</div>
-						<div class="fill p-0">
-							<v-text v-model="form.route" class="small" placeholder="Route endpoint"></v-text>
+						<div class="fill">
+							<v-text v-model="form.url" class="small" placeholder="URL"></v-text>
 						</div>
 					</div>
 
-					<div class="overflow-y border-left" style="height:45vh;padding-bottom:50px">
-						<div v-show="!['GET','DELETE'].includes(form.method)" class="small border">
-							<div class="row gap four">
-								<span class="py-0">Type</span>
-								<span class="py-0">Name</span>
-								<span class="py-0">Value</span>
+					<div class="border-bottom my-2"></div>
+					<div v-show="!['GET','DELETE'].includes(form.method)" class="small border">
+						<div class="row gap four">
+							<span class="py-0">Type</span>
+							<span class="py-0">Name</span>
+							<span class="py-0">Value</span>
+						</div>
+						<div v-for="opt in form.options" class="row gap four">
+							<v-select v-model="opt.type" :options="['text','file']" class="large"></v-select>
+							<v-text v-model="opt.key"></v-text>
+							<div class="fill">
+								<v-text v-if="opt.type=='text'" v-model="opt.value"></v-text>
+								<v-file v-else v-model="opt.value"></v-file>
 							</div>
-							<div v-for="opt in form.options" class="row gap four">
-								<v-select v-model="opt.type" :options="['text','file']" class="large"></v-select>
-								<v-text v-model="opt.key"></v-text>
-								<div class="fill">
-									<v-text v-if="opt.type=='text'" v-model="opt.value"></v-text>
-									<v-file v-else v-model="opt.value"></v-file>
-								</div>
 
-							</div>
 						</div>
 					</div>
-					<pre class="small overflow-y" style="height:20vh;white-space:pre-wrap">{{ formRequest }}</pre>
+					<button v-if="loading" class="small muted">Loading ... </button>
+					<template v-else>
+						<button v-if="!form.external" class="small secondary" @click="submit">Send</button>
+					</template>
+					<a v-if="form.external" :href="form.url" class="button small" target="_blank">External</a>
+
+					<hr>
+					<button @click="prev=[]" class="maroon small">Reset Test</button>
+					<pre class="small overflow-y" style="max-height:30vh;white-space:pre-wrap">{{ formRequest }}</pre>
 				</section>
 
 
 				<section class="result small pl-3 border-left">
-					<label>Token</label>
-					<div v-if="status" class="group large" style="float:right">
+					<div v-if="status" class="group large">
 						<span :class="(status.ok ? 'info': 'error')+' label'">{{ status.status }}</span>
 						<span :class="(status.ok ? 'info': 'error')+' label'">{{ status.statusText }}</span>
 						&nbsp;
 						&nbsp;
 						<span :class="(status.ok ? 'info': 'error')+' label'">{{ status.time/1000 }} s</span>
 					</div>
+					<br>
+
+					<label>Token</label>
 					<textarea class="small">{{ token }}</textarea>
 
 					<label>Firebase Token</label>
 					<textarea class="small">{{ firebaseToken }}</textarea>
 
 					<label>Header</label>
-					<textarea class="small" style="height:100px">{{ header }}</textarea>
+					<textarea class="small" style="height:150px">{{ header }}</textarea>
 					<br>
-					<div class="row" :data-tooltip="'response: '+(response.request||{}).route">
-						<div class="p-0">
-							<label>Response</label>
-							<button @click="asHtml=!asHtml" class="small mx-2">{{ asHtml?'HTML':'TEXT' }}</button>
-							<button @click="responses=[];response.index=null" class="maroon small">Reset</button>
-						</div>
-						<div class="p-0">
-							<v-text v-model="response.index" :max="responses.length-1" :min="0" type="number"></v-text>
-						</div>
-					</div>
-					<div v-if="asHtml" v-html="responses[response.index]"></div>
-					<textarea v-else class="small" style="height:300px">{{ responses[response.index] }}</textarea>
+					<label>Response</label>
+					<button @click="asHtml=!asHtml" class="small">{{ asHtml?'HTML':'TEXT' }}</button>
+					<div v-if="asHtml" v-html="response"></div>
+					<textarea v-else class="small" style="height:300px">{{ response }}</textarea>
 				</section>
 			</div>
 
@@ -178,6 +155,7 @@
 
 	</div>
 
+	<script src="/collections.js?v1"></script>
 	<script>
 		var baseurl = localStorage.getItem('baseurl');
 		var groupFiltered = localStorage.getItem('groupFiltered');
@@ -189,16 +167,13 @@
 					status	: null,
 					token : null,
 					header : null,
-					response: {
-						request:{},
-						index:null
-					},
+					response: null,
 					asHtml  : false,
 					loading : false,
-					responses:[],
+					prev	:[],
 					form 	: {
 						method :'GET',
-						route :'',
+						url :'',
 						body:{},
 						options : [
 							{ type: 'text', key:'', value:''},
@@ -211,11 +186,11 @@
 						'DELETE' : 'error',
 					},
 					collections : {
-						group	: Object.keys([]),
+						group	: Object.keys(collections),
 						groupFiltered	: groupFiltered?JSON.parse(groupFiltered):Object.keys(collections),
 						search 	: '',
 						filter	: '',
-						data	: []
+						data	: collections
 					}
 				};
 			},
@@ -257,14 +232,13 @@
 			},
 			computed:{
 				filteredCollections(){
-					return this.collections.data;
 					var obj = {};
 					Object.keys(this.collections.data).forEach(key=>{
 						if(this.collections.groupFiltered.includes(key)){
 							var collections = this.collections.data[key];
 
 							var isExists = d => {
-								var searched = d.route.includes(this.collections.search);
+								var searched = d.url.includes(this.collections.search);
 								var filtered = d.method.includes(this.collections.filter);
 								return searched && filtered;
 							};
@@ -280,16 +254,6 @@
 				}
 			},
 			methods:{
-				getCollection(){
-					fetch(this.baseurl+'app/route/collection')
-					.then(r=>r.json())
-					.then(r=>{
-						this.collections.data = r;
-						this.collections.group = Object.keys(r);
-						//console.log(r)
-					})
-
-				},
 				firebaseMessagingToken(){
 					firebase.messaging().getToken().then(r=>{
 						this.firebaseToken = r;
@@ -310,15 +274,10 @@
 						collection.body = {};
 					}
 					this.form = Object.assign({}, collection);
-					delete(this.form.menu_id);
 
-					this.form.route = this.form.route
-						.replace('{read}','read')
-						.replace('{id}',Math.floor(Math.random()*10));
-
-					if(this.form.route.indexOf(':responses')>-1){
-						path = this.form.route.split(':prev.');
-						this.form.route = path[0] + path[1].split('.').reduce((p,c)=>p&&p[c]||null, this.prev);
+					if(this.form.url.indexOf(':prev')>-1){
+						path = this.form.url.split(':prev.');
+						this.form.url = path[0] + path[1].split('.').reduce((p,c)=>p&&p[c]||null, this.prev);
 					}
 
 //					console.log(this.form.url);
@@ -360,8 +319,10 @@
 					}else{
 						body	= this.setData(form.body);
 					}
-
-					fetch(this.baseurl + form.route,{
+					if(form.url.indexOf('logout')>-1){
+						//this.token = ''
+					}
+					fetch(this.baseurl + form.url,{
 						method	: form.method,
 						body	: body,
 						headers	: {Authorization : 'Bearer '+ this.token}
@@ -388,11 +349,8 @@
 						}catch(e){
 							resp = response;
 						}
-						this.responses.push(resp);
-						this.response= {
-							request: form,
-							index : this.responses.length -1
-						};
+						this.prev.push(resp);
+						this.response = resp;
 					}).catch(error=>{
 						try{
 							var resp = JSON.parse(error);
