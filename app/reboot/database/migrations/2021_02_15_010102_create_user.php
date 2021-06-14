@@ -28,10 +28,10 @@ class CreateUser extends Migration
 
         DB::table('app_user')->insert([
 
-			['role_id' => 1	, 'name' => 'drax', 'email' => 'pondrax3@gmail.com', 'password' => bcrypt('lumen123')],
-			['role_id' => 2	, 'name' => 'admin', 'email' => 'administa@lumen.com', 'password' => bcrypt('lumen123')],
+            ['role_id' => 1, 'name' => 'drax', 'email' => 'pondrax3@gmail.com', 'password' => bcrypt('lumen123')],
+            ['role_id' => 2, 'name' => 'admin', 'email' => 'administa@lumen.com', 'password' => bcrypt('lumen123')],
 
-		]);
+        ]);
     }
 
     /**

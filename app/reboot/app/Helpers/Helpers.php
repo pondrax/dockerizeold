@@ -1,59 +1,64 @@
 <?php
 
 use Carbon\Carbon;
+use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Contracts\Validation\Factory as ValidationFactory;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use Laravel\Lumen\Application;
 use Laravel\Lumen\Routing\UrlGenerator;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
 use Symfony\Component\HttpFoundation\Cookie;
-use Illuminate\Contracts\Validation\Factory as ValidationFactory;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Contracts\Auth\Access\Gate;
 
-
-if (! function_exists('csvToArray')) {
+if (!function_exists('csvToArray')) {
     /**
-     * Get the current time
+     * Get the current time.
      *
-     * @param  string  $csv
+     * @param string $csv
+     *
      * @return string
      */
-    function csvToArray($csv, $separator=','){
+    function csvToArray($csv, $separator = ',')
+    {
         //$rows = array_map('str_getcsv',preg_split('/\n/', $csv));
-        $rows = array_map(function($v)use($separator){return str_getcsv($v, $separator);}, preg_split('/\n/', $csv));
+        $rows = array_map(function ($v) use ($separator) {return str_getcsv($v, $separator); }, preg_split('/\n/', $csv));
         $header = array_shift($rows);
         $data = [];
-        foreach($rows as $row){
-			$data[] = array_combine($header, $row);
-		}
-		return $data;
+        foreach ($rows as $row) {
+            $data[] = array_combine($header, $row);
+        }
+
+        return $data;
     }
 }
 
-if (! function_exists('now')) {
+if (!function_exists('now')) {
     /**
-     * Get the current time
+     * Get the current time.
      *
-     * @param  string  $date
+     * @param string $date
+     *
      * @return string
      */
     function now($date = null)
     {
-		if($date){
-			return Carbon::parse($date);
-		}
+        if ($date) {
+            return Carbon::parse($date);
+        }
+
         return Carbon::now();
     }
 }
 
-if (! function_exists('public_path')) {
+if (!function_exists('public_path')) {
     /**
      * Get the path to the public folder.
      *
-     * @param  string  $path
+     * @param string $path
+     *
      * @return string
      */
     function public_path($path = '')
@@ -62,11 +67,12 @@ if (! function_exists('public_path')) {
     }
 }
 
-if (! function_exists('config_path')) {
+if (!function_exists('config_path')) {
     /**
      * Get the configuration path.
      *
-     * @param  string  $path
+     * @param string $path
+     *
      * @return string
      */
     function config_path($path = '')
@@ -75,60 +81,64 @@ if (! function_exists('config_path')) {
     }
 }
 
-if (! function_exists('mix')) {
+if (!function_exists('mix')) {
     /**
      * Get the path to a versioned Mix file.
      *
-     * @param  string  $path
-     * @param  string  $manifestDirectory
-     * @return \Illuminate\Support\HtmlString
+     * @param string $path
+     * @param string $manifestDirectory
      *
      * @throws \Exception
+     *
+     * @return \Illuminate\Support\HtmlString
      */
+    function mix($path, $manifest = false, $shouldHotReload = false)
+    {
+        if (!$manifest) {
+            static $manifest;
+        }
+        if (!$shouldHotReload) {
+            static $shouldHotReload;
+        }
 
+        if (!$manifest) {
+            $manifestPath = public_path('mix-manifest.json');
+            $shouldHotReload = file_exists(public_path('hot'));
 
+            if (!file_exists($manifestPath)) {
+                throw new Exception(
+                    'The Laravel Mix manifest file does not exist. '.
+                    'Please run "npm run webpack" and try again.'
+                );
+            }
 
-    function mix($path, $manifest = false, $shouldHotReload = false){
-		if (! $manifest) static $manifest;
-		if (! $shouldHotReload) static $shouldHotReload;
+            $manifest = json_decode(file_get_contents($manifestPath), true);
+        }
 
-		if (! $manifest) {
-			$manifestPath = public_path('mix-manifest.json');
-			$shouldHotReload = file_exists(public_path('hot'));
+        if (!Str::startsWith($path, '/')) {
+            $path = "/{$path}";
+        }
 
-			if (! file_exists($manifestPath)) {
-				throw new Exception(
-					'The Laravel Mix manifest file does not exist. ' .
-					'Please run "npm run webpack" and try again.'
-				);
-			}
+        if (!array_key_exists($path, $manifest)) {
+            throw new Exception(
+                "Unknown Laravel Mix file path: {$path}. Please check your requested ".
+                'webpack.mix.js output path, and try again.'
+            );
+        }
+        $HMR_PORT = isset($_ENV['MIX_HMR']) ? $_ENV['MIX_HMR'] : 8080;
 
-			$manifest = json_decode(file_get_contents($manifestPath), true);
-		}
-
-		if (! Str::startsWith($path, '/')) $path = "/{$path}";
-
-		if (! array_key_exists($path, $manifest)) {
-			throw new Exception(
-				"Unknown Laravel Mix file path: {$path}. Please check your requested " .
-				"webpack.mix.js output path, and try again."
-			);
-		}
-		$HMR_PORT = isset($_ENV['MIX_HMR'])? $_ENV['MIX_HMR']: 8080;
-
-		return $shouldHotReload
-			? "http://localhost:{$HMR_PORT}{$manifest[$path]}"
-			: url($manifest[$path]);
-	}
-
-
+        return $shouldHotReload
+            ? "http://localhost:{$HMR_PORT}{$manifest[$path]}"
+            : url($manifest[$path]);
+    }
 }
 
-if (! function_exists('auth')) {
+if (!function_exists('auth')) {
     /**
      * Get the available auth instance.
      *
-     * @param  string|null  $guard
+     * @param string|null $guard
+     *
      * @return \Illuminate\Contracts\Auth\Factory|\Illuminate\Contracts\Auth\Guard|\Illuminate\Contracts\Auth\StatefulGuard
      */
     function auth($guard = null)
@@ -141,18 +151,19 @@ if (! function_exists('auth')) {
     }
 }
 
-if (! function_exists('abort_if')) {
+if (!function_exists('abort_if')) {
     /**
      * Throw an HttpException with the given data if the given condition is true.
      *
-     * @param  bool    $boolean
-     * @param  int     $code
-     * @param  string  $message
-     * @param  array   $headers
-     * @return void
+     * @param bool   $boolean
+     * @param int    $code
+     * @param string $message
+     * @param array  $headers
      *
      * @throws \Symfony\Component\HttpKernel\Exception\HttpException
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     *
+     * @return void
      */
     function abort_if($boolean, $code, $message = '', array $headers = [])
     {
@@ -162,33 +173,35 @@ if (! function_exists('abort_if')) {
     }
 }
 
-if (! function_exists('abort_unless')) {
+if (!function_exists('abort_unless')) {
     /**
      * Throw an HttpException with the given data unless the given condition is true.
      *
-     * @param  bool    $boolean
-     * @param  int     $code
-     * @param  string  $message
-     * @param  array   $headers
-     * @return void
+     * @param bool   $boolean
+     * @param int    $code
+     * @param string $message
+     * @param array  $headers
      *
      * @throws \Symfony\Component\HttpKernel\Exception\HttpException
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     *
+     * @return void
      */
     function abort_unless($boolean, $code, $message = '', array $headers = [])
     {
-        if (! $boolean) {
+        if (!$boolean) {
             abort($code, $message, $headers);
         }
     }
 }
 
-if (! function_exists('bcrypt')) {
+if (!function_exists('bcrypt')) {
     /**
      * Hash the given value.
      *
-     * @param  string  $value
-     * @param  array   $options
+     * @param string $value
+     * @param array  $options
+     *
      * @return string
      */
     function bcrypt($value, $options = [])
@@ -197,19 +210,20 @@ if (! function_exists('bcrypt')) {
     }
 }
 
-if (! function_exists('cookie')) {
+if (!function_exists('cookie')) {
     /**
      * Create a new cookie instance.
      *
-     * @param  string  $name
-     * @param  string  $value
-     * @param  int  $minutes
-     * @param  string  $path
-     * @param  string  $domain
-     * @param  bool  $secure
-     * @param  bool  $httpOnly
-     * @param  bool  $raw
-     * @param  string|null  $sameSite
+     * @param string      $name
+     * @param string      $value
+     * @param int         $minutes
+     * @param string      $path
+     * @param string      $domain
+     * @param bool        $secure
+     * @param bool        $httpOnly
+     * @param bool        $raw
+     * @param string|null $sameSite
+     *
      * @return \Illuminate\Cookie\CookieJar|\Symfony\Component\HttpFoundation\Cookie
      */
     function cookie($name = null, $value = null, $minutes = 0, $path = null, $domain = null, $secure = false, $httpOnly = true, $raw = false, $sameSite = null)
@@ -228,9 +242,9 @@ if (!function_exists('policy')) {
      *
      * @param object|string $class
      *
-     * @return mixed
-     *
      * @throws \InvalidArgumentException
+     *
+     * @return mixed
      */
     function policy($class)
     {
@@ -242,7 +256,7 @@ if (!function_exists('report')) {
     /**
      * Report an exception.
      *
-     * @param  \Exception $exception
+     * @param \Exception $exception
      *
      * @return void
      */
@@ -261,8 +275,8 @@ if (!function_exists('action')) {
      * Generate the URL to a controller action.
      *
      * @param string $name
-     * @param array $parameters
-     * @param bool $absolute
+     * @param array  $parameters
+     * @param bool   $absolute
      *
      * @return string
      */
@@ -300,12 +314,14 @@ if (!function_exists('action')) {
                         }
                     }
                     if (!empty($parameters)) {
-                        $uri .= '?' . http_build_query($parameters);
+                        $uri .= '?'.http_build_query($parameters);
                     }
+
                     return $uri;
                 }
             }
         }
+
         throw new InvalidArgumentException("Action {$name} not defined.");
     }
 }
@@ -315,7 +331,7 @@ if (!function_exists('app_with')) {
      * Get the available container instance.
      *
      * @param string $abstract
-     * @param array $parameters
+     * @param array  $parameters
      *
      * @return mixed|Application
      */
@@ -341,7 +357,7 @@ if (!function_exists('asset')) {
      * Generate an asset path for the application.
      *
      * @param string $path
-     * @param bool $secure
+     * @param bool   $secure
      *
      * @return string
      */
@@ -355,7 +371,7 @@ if (!function_exists('back')) {
     /**
      * Create a new redirect response to the previous location.
      *
-     * @param int $status
+     * @param int   $status
      * @param array $headers
      * @param mixed $fallback
      *
@@ -375,9 +391,9 @@ if (!function_exists('cache')) {
      *
      * @param dynamic key|key,default|data,expiration|null
      *
-     * @return mixed
-     *
      * @throws \Exception
+     *
+     * @return mixed
      */
     function cache()
     {
@@ -398,6 +414,7 @@ if (!function_exists('cache')) {
                 'You must specify an expiration time when setting a value in the cache.'
             );
         }
+
         return app('cache')->put(key($arguments[0]), reset($arguments[0]), $arguments[1]);
     }
 }
@@ -406,7 +423,7 @@ if (!function_exists('logger')) {
     /**
      * Log a debug message to the logs.
      *
-     * @param null $message
+     * @param null  $message
      * @param array $context
      *
      * @return Log|null
@@ -416,6 +433,7 @@ if (!function_exists('logger')) {
         if (is_null($message)) {
             return app('log');
         }
+
         return app('log')->debug($message, $context);
     }
 }
@@ -430,7 +448,7 @@ if (!function_exists('method_field')) {
      */
     function method_field($method)
     {
-        return new HtmlString('<input type="hidden" name="_method" value="' . $method . '" />');
+        return new HtmlString('<input type="hidden" name="_method" value="'.$method.'" />');
     }
 }
 
@@ -438,10 +456,10 @@ if (!function_exists('validator')) {
     /**
      * Create a new Validator instance.
      *
-     * @param  array $data
-     * @param  array $rules
-     * @param  array $messages
-     * @param  array $customAttributes
+     * @param array $data
+     * @param array $rules
+     * @param array $messages
+     * @param array $customAttributes
      *
      * @return Validator|ValidationFactory
      */
@@ -452,16 +470,18 @@ if (!function_exists('validator')) {
         if (func_num_args() === 0) {
             return $factory;
         }
+
         return $factory->make($data, $rules, $messages, $customAttributes);
     }
 }
 
-if (! function_exists('request')) {
+if (!function_exists('request')) {
     /**
      * Get an instance of the current request or an input item from the request.
      *
-     * @param  array|string  $key
-     * @param  mixed   $default
+     * @param array|string $key
+     * @param mixed        $default
+     *
      * @return \Illuminate\Http\Request|string|array
      */
     function request($key = null, $default = null)
