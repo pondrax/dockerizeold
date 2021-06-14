@@ -16,67 +16,72 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     use Authorizable;
     use Notifiable;
 
-    protected $table = 'app_user';
+    /**
+     * Configs
+     */
+    protected $table	= 'app_user';
+
+    protected $hidden 	= ['password','deleted_at'];
+    protected $guard	= [];
+    protected $appends	= [];
+    protected $with		= ['role'];
+    protected $without	= [];
+
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
+     * Rules
      */
-    protected $fillable = [
-        'name', 'email',
-    ];
+    public static $rules = [
+		'register' => [
+			'name'		=> 'required',
+			'email'		=> 'required|email|unique:app_user,email:id',
+			'password'	=> 'required|string|min:8',
+		],
+		'login' => [
+			'name'		=> 'required|string',
+			'password'	=> 'required|string',
+		],
+		'save' => [
+			'name'		=> 'required',
+			'email'		=> 'required|email|unique:app_user,email:id',
+			'password'	=> 'required|string|min:8',
+		],
+	];
+
 
     /**
-     * The attributes excluded from the model's JSON form.
-     *
-     * @var array
+     * Mutators
      */
-    protected $hidden = [
-        'password',
-    ];
+	public function setPasswordAttribute($value)
+	{
+		return $this->password = bcrypt($value);
+	}
 
-    public function validate($data, $rule, $message, $index)
+
+    /**
+     * Assessor
+     */
+
+
+    /**
+     * Relationships
+     */
+    public function role()
     {
-        $rules = [
-            'register' => [
-                'name'		   => 'required',
-                'email'		  => 'required|email',
-                'password'	=> 'required',
-            ],
-            'login' => [
-                'name' 		   => 'required|string',
-                'password' 	=> 'required|string',
-            ],
-            'create' => [],
-            'update' => [],
-        ];
-
-        return $rulels['register'];
+        return $this->belongsTo('App\Models\Role')->withTrashed();
     }
 
+
     /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
-     *
-     * @return mixed
+     * Customs
      */
     public function getJWTIdentifier()
     {
         return $this->getKey();
     }
 
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT.
-     *
-     * @return array
-     */
     public function getJWTCustomClaims()
     {
         return [];
-    }
-
-    public function role()
-    {
-        return $this->belongsTo('App\Models\Role');
     }
 }

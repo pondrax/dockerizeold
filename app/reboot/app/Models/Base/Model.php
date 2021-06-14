@@ -22,12 +22,24 @@ class Model extends BaseModel
     public static function validate($request, $method, $id = null)
     {
         $rules = static::$rules[$method];
-        if ($id) {
-            foreach ($rules as $key=>$rule) {
-                $rules[$key] = str_replace(':id', $id, $rule);
-            }
+		foreach ($rules as $key=>$rule) {
+			if($id != null){
+				$rule = str_replace(['required',':id'], ['',$id], $rule);
+			}else{
+				$rule = str_replace([',:id'], [''], $rule);
+			}
+			$rule = ltrim(str_replace('||', '|', $rule), '|');
+			//d($rule, $key);
+                //d($rule, $id);
+			// if has ID (update) modify set unique value & skip required
+			//if ($id) {
+                //$rules[$key] = str_replace(['required', ':id'], ['', ','.$id], $rule);
+            //}else{
+                //$rules[$key] = str_replace(':id', '', $rule);
+			//}
+			$rules[$key] = $rule;
         }
-
+		//d($id, $rules);
         return \Validator::validate($request->all(), $rules, static::$customMessage, static::$customAttribute);
     }
 

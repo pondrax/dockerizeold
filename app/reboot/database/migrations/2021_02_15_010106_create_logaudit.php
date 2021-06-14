@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateLogs extends Migration
+class CreateLogaudit extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateLogs extends Migration
      */
     public function up()
     {
-        Schema::create('app_logs', function (Blueprint $table) {
+        Schema::create('app_logaudit', function (Blueprint $table) {
             $table->increments('id');
             $table->string('user');
             $table->string('route');
@@ -21,7 +21,9 @@ class CreateLogs extends Migration
             $table->string('data');
             $table->string('ip');
 
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent();
+            $table->timestamp('deleted_at')->nullable();
         });
     }
 
@@ -32,6 +34,6 @@ class CreateLogs extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('app_logs');
+        Schema::dropIfExists('app_logaudit');
     }
 }

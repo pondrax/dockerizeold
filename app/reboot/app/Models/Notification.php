@@ -4,14 +4,14 @@ namespace App\Models;
 
 use App\Models\Base\Model;
 
-class Role extends Model
+class Logaudit extends Model
 {
     /**
      * Configs
      */
-    protected $table	= 'app_role';
+    protected $table	= 'app_logaudit';
 
-    protected $hidden	= ['deleted_at'];
+    protected $hidden	= [];
     protected $guard	= [];
     protected $appends	= [];
     protected $with		= [];
@@ -23,8 +23,9 @@ class Role extends Model
      */
     public static $rules = [
         'save' => [
-            'role'			=> 'required|string',
-            'description'	=> 'required|string',
+            'menu_id' => 'required|integer',
+            'route'   => 'required|string|unique:app_route,route',
+            'method'  => 'required|string',
         ],
 	];
 
@@ -42,13 +43,8 @@ class Role extends Model
     /**
      * Relationships
      */
-    public function user()
-    {
-        return $this->hasMany('App\Models\User');
-    }
-
-    public function access()
-    {
-        return $this->hasMany('App\Models\Access');
-    }
+    //public function menu()
+    //{
+        //return $this->belongsTo('App\Models\User')->withTrashed();
+    //}
 }

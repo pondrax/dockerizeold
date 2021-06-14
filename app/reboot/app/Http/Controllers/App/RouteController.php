@@ -5,18 +5,19 @@ namespace App\Http\Controllers\App;
 use App\Http\Controllers\Base\Controller;
 use App\Models\Menu;
 use App\Models\Route;
-use Illuminate\Http\Request;
 
 class RouteController extends Controller
 {
     public function collection($read = 'all')
     {
         $result = [
-            'app' => Menu::select('id', 'menu', 'icon')
-                ->has('route')
-                ->with('route:menu_id,method,route,description')
-                ->orderBy('num', 'asc')
-                ->get(),
+            'data' => [
+				'app' => Menu::select('id', 'menu', 'icon')
+					->has('route')
+					->with('route:menu_id,method,route,description')
+					->orderBy('num', 'asc')
+					->get(),
+			]
         ];
 
         return $this->response($result);
@@ -29,37 +30,36 @@ class RouteController extends Controller
         return $this->response($result);
     }
 
-    public function generate(Request $request)
+    public function generate()
     {
-        $data = Route::validate($request, 'save');
-        $result = Route::insert($data);
+        $data	= Route::validate(request(), 'save');
+        $result	= Route::insert($data);
 
         return $this->response($data);
     }
 
-    public function create(Request $request)
+    public function create()
     {
-        $data = Route::validate($request, 'save');
-        $result = Route::insert($data);
-
-        return $this->response($data);
+        $data	= Route::validate(request(), 'save');
+        $result	= Route::create($data);
+		//var_dump($result);
+        return $this->response('created', $result);
     }
 
-    public function update(Request $request, $id)
+    public function update($id)
     {
-        $data = Route::validate($request, 'save', $id);
-        $result = Route::where('id', $id)->update($data);
+        $data	= Route::validate(request(), 'save', $id);
+        $result	= Route::find($id);
+        $result->update($data);
 
-        return $this->response(['message'=>"Updated ($id)"]);
+        return $this->response('updated', $result);
     }
 
     public function delete($id)
     {
-        $ids = explode(',', $id);
-        $result = Route::find($ids)->each(function ($data, $key) {
-            $data->delete();
-        });
+		$ids	= explode(',', $id);
+		$result	= Route::whereIn('id', $ids)->delete();
 
-        return $this->response(['message'=>"Deleted ($id)"]);
+        return $this->response('deleted', $result);
     }
 }

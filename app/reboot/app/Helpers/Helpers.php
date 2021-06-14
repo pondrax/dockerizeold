@@ -13,6 +13,45 @@ use Laravel\Lumen\Routing\UrlGenerator;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
 use Symfony\Component\HttpFoundation\Cookie;
 
+if (!function_exists('d')) {
+    /**
+     * dump the var
+     *
+     * @param string $any
+     *
+     * @return string
+     */
+    function d(...$dump)
+    {
+		echo "<pre>";
+		return var_dump($dump);
+    }
+}
+
+if (!function_exists('flatten')) {
+    /**
+     * Get the flat array with dots.
+     *
+     * @param string $multiarray
+     *
+     * @return string
+     */
+    function flatten($multiArr)
+    {
+		$ritit = new RecursiveIteratorIterator(new RecursiveArrayIterator($multiArr));
+		$result = array();
+		foreach ($ritit as $leafValue) {
+			$keys = array();
+			foreach (range(0, $ritit->getDepth()) as $depth) {
+				$keys[] = $ritit->getSubIterator($depth)->key();
+			}
+			$result[ join('.', $keys) ] = $leafValue;
+		}
+		return $result;
+    }
+}
+
+
 if (!function_exists('csvToArray')) {
     /**
      * Get the current time.

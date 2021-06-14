@@ -219,6 +219,12 @@
 					}
 				};
 			},
+			created() {
+				window.addEventListener("resize", this.resizeHandler);
+			},
+			destroyed() {
+				window.removeEventListener("resize", this.resizeHandler);
+			},
 			mounted(){
 				setTimeout(()=>{
 					this.firebaseMessagingToken();
@@ -280,12 +286,14 @@
 				}
 			},
 			methods:{
+				resizeHandler(){
+					},
 				getCollection(){
 					fetch(this.baseurl+'app/route/collection')
 					.then(r=>r.json())
-					.then(r=>{
-						this.collections.data = r;
-						this.collections.group = Object.keys(r);
+					.then(response=>{
+						this.collections.data = response.data;
+						this.collections.group = Object.keys(response.data);
 						//console.log(r)
 					})
 
@@ -394,13 +402,17 @@
 							index : this.responses.length -1
 						};
 					}).catch(error=>{
+						//console.log(error);
 						try{
 							var resp = JSON.parse(error);
 						}catch(e){
 							resp = error;
 						}
-						this.response = resp;
-						// console.log(error);
+						this.responses.push(resp);
+						this.response= {
+							request: form,
+							index : this.responses.length -1
+						};
 					}).finally(_=>{
 						this.loading = false;
 					})
