@@ -6,7 +6,6 @@ require_once __DIR__.'/../vendor/autoload.php';
     dirname(__DIR__)
 ))->bootstrap();
 
-
 /*
 |--------------------------------------------------------------------------
 | Create The Application
@@ -75,7 +74,7 @@ $app->alias('mail.manager', Illuminate\Contracts\Mail\Factory::class);
 */
 
  $app->middleware([
-     App\Http\Middleware\CorsMiddleware::class
+     App\Http\Middleware\CorsMiddleware::class,
  ]);
 
  $app->routeMiddleware([

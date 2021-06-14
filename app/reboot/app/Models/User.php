@@ -3,19 +3,20 @@
 namespace App\Models;
 
 use App\Models\Base\Model;
-use Laravel\Lumen\Auth\Authorizable;
 use Illuminate\Auth\Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
-
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Lumen\Auth\Authorizable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Model implements AuthenticatableContract, AuthorizableContract, JWTSubject
 {
-    use Authenticatable, Authorizable, Notifiable;
+    use Authenticatable;
+    use Authorizable;
+    use Notifiable;
 
-	protected $table = 'app_user';
+    protected $table = 'app_user';
 
     /**
      * The attributes that are mass assignable.
@@ -23,7 +24,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @var array
      */
     protected $fillable = [
-        'name', 'email'
+        'name', 'email',
     ];
 
     /**
@@ -35,24 +36,24 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'password',
     ];
 
+    public function validate($data, $rule, $message, $index)
+    {
+        $rules = [
+            'register' => [
+                'name'		   => 'required',
+                'email'		  => 'required|email',
+                'password'	=> 'required',
+            ],
+            'login' => [
+                'name' 		   => 'required|string',
+                'password' 	=> 'required|string',
+            ],
+            'create' => [],
+            'update' => [],
+        ];
 
-	public function validate($data, $rule, $message, $index){
-		$rules = [
-			'register' => [
-				'name'		=> 'required',
-				'email'		=> 'required|email',
-				'password'	=> 'required'
-			],
-			'login' => [
-				'name' 		=> 'required|string',
-				'password' 	=> 'required|string',
-			],
-			'create' => [],
-			'update' => []
-		];
-
-		return $rulels['register'];
-	}
+        return $rulels['register'];
+    }
 
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
@@ -74,10 +75,8 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         return [];
     }
 
-
     public function role()
     {
         return $this->belongsTo('App\Models\Role');
     }
-
 }

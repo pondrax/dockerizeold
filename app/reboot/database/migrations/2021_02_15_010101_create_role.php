@@ -24,10 +24,10 @@ class CreateRole extends Migration
         });
 
         DB::table('app_role')->insert([
-			['role' => 'Developer'		, 'description' => 'Main Developer'],
-			['role' => 'Administrator'	, 'description' => 'Administrator'],
-			['role' => 'Editor'			, 'description' => 'Editor'],
-			['role' => 'Member'			, 'description' => 'Member'],
+            ['role' => 'Developer', 'description' => 'Main Developer'],
+            ['role' => 'Administrator', 'description' => 'Administrator'],
+            ['role' => 'Editor', 'description' => 'Editor'],
+            ['role' => 'Member', 'description' => 'Member'],
         ]);
     }
 

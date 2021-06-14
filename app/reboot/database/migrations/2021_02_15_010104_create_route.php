@@ -18,7 +18,7 @@ class CreateRoute extends Migration
             $table->foreignId('menu_id')->constrained('app_menu');
             $table->string('method');
             $table->string('route');
-            $table->string('uses');//->unique();
+            $table->string('uses'); //->unique();
             $table->string('prefix');
             $table->string('middleware');
             $table->string('description')->nullable();
