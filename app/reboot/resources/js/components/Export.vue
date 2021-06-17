@@ -1,7 +1,7 @@
 <template>
 	<el-dropdown>
 		<el-button type="primary" size="small" plain>
-			Export <i class="el-icon-arrow-down el-icon--right"></i>
+			{{ $t('button.export') }} <i class="el-icon-arrow-down el-icon--right"></i>
 		</el-button>
 		<template #dropdown>
 			<el-dropdown-menu>
@@ -20,8 +20,7 @@
 		props : ['data', 'filename'],
 		methods:{
 			download(type){
-
-				console.log(this.data, this.filename, type);
+				//console.log(this.data, this.filename, type);
 				exportFromJSON({
 					data		: this.data,
 					fileName	: this.filename,

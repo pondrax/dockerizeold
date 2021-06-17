@@ -13,7 +13,7 @@ class Notify extends Notification implements ShouldQueue
 
     private $notify;
 
-    public function __construct($notify)
+    public function __construct($data)
     {
         $this->notify = $notify;
     }
@@ -28,24 +28,22 @@ class Notify extends Notification implements ShouldQueue
     public function via($notifiable)
     {
         return [
-            'mail',
+            'database','mail',
         ];
     }
 
     public function viaQueues()
     {
         return [
-            'mail'=> 'default',
+            'database'	=> 'default',
+            'mail'  	=> 'default',
         ];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     *
-     * @param mixed $notifiable
-     *
-     * @return \Illuminate\Notifications\Messages\MailMessage
-     */
+	public function toArray($notifiable){
+		return $notifiable;
+	}
+
     public function toMail($notifiable)
     {
         $url = url('/activate/'.$this->notify['message']);
@@ -58,4 +56,5 @@ class Notify extends Notification implements ShouldQueue
                     ->action('View Invoice', $url)
                     ->line('Thank you for using our application!');
     }
+
 }

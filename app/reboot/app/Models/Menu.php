@@ -13,7 +13,7 @@ class Menu extends Model
 
     protected $hidden	= ['deleted_at'];
     protected $guard	= [];
-    protected $appends	= [];
+    protected $appends	= ['sub_menu'];
     protected $with		= [];
     protected $without	= [];
 
@@ -37,7 +37,9 @@ class Menu extends Model
     /**
      * Assessor
      */
-
+	public function getSubMenuAttribute(){
+		return explode(' -> ', $this->menu);
+	}
 
     /**
      * Relationships

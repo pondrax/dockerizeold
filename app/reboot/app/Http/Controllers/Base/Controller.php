@@ -40,7 +40,7 @@ class Controller extends BaseController
 		}
 		try{
 			if(!is_array($props)){
-				$props = $props==null || is_int($props) ? []: flatten($props->toArray());
+				$props = $props==null || is_bool($props) || is_int($props) || is_string($props)? []: flatten($props->toArray());
 			}
 			$data['message'] = __("message.$message", $props);
 		}catch(\Exception $e){}

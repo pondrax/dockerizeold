@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateRole extends Migration
+class CreateLogauditTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,22 +13,18 @@ class CreateRole extends Migration
      */
     public function up()
     {
-        Schema::create('app_role', function (Blueprint $table) {
+        Schema::create('app_logaudit', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('role');
-            $table->text('description');
+            $table->string('user');
+            $table->string('route');
+            $table->string('method');
+            $table->string('data');
+            $table->string('ip');
 
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
             $table->timestamp('deleted_at')->nullable();
         });
-
-        DB::table('app_role')->insert([
-            ['role' => 'Developer', 'description' => 'Main Developer'],
-            ['role' => 'Administrator', 'description' => 'Administrator'],
-            ['role' => 'Editor', 'description' => 'Editor'],
-            ['role' => 'Member', 'description' => 'Member'],
-        ]);
     }
 
     /**
@@ -38,6 +34,6 @@ class CreateRole extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('app_role');
+        Schema::dropIfExists('app_logaudit');
     }
 }

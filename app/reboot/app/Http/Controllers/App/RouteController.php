@@ -13,10 +13,10 @@ class RouteController extends Controller
         $result = [
             'data' => [
 				'app' => Menu::select('id', 'menu', 'icon')
-					->has('route')
-					->with('route:menu_id,method,route,description')
-					->orderBy('num', 'asc')
-					->get(),
+						->has('route')
+						->with('route:menu_id,method,route,data')
+						->orderBy('num', 'asc')
+						->table(),
 			]
         ];
 
@@ -32,7 +32,7 @@ class RouteController extends Controller
 
     public function generate()
     {
-        $data	= Route::validate(request(), 'save');
+        $data	= Route::validate(request(), 'generate');
         $result	= Route::insert($data);
 
         return $this->response($data);
@@ -42,8 +42,8 @@ class RouteController extends Controller
     {
         $data	= Route::validate(request(), 'save');
         $result	= Route::create($data);
-		//var_dump($result);
-        return $this->response('created', $result);
+
+        return $this->response('created', $result, 201);
     }
 
     public function update($id)
@@ -60,6 +60,6 @@ class RouteController extends Controller
 		$ids	= explode(',', $id);
 		$result	= Route::whereIn('id', $ids)->delete();
 
-        return $this->response('deleted', $result);
+        return $this->response('deleted', ['id' => $id]);
     }
 }

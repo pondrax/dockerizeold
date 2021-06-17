@@ -120,12 +120,17 @@ class Builder extends BaseBuilder
 
     public function table()
     {
-        $limit = request('limit');
-        $sort = request('sort', 'id');
-        $order = request('order', 'desc');
+        $limit 	= request('limit', 10);
+        $sort 	= request('sort', 'id');
+		$order	= request('order') == 'ascending'? 'asc': 'desc';
 
         return $this->filtering()
             ->orderBy($sort, $order)
             ->paginate($limit);
     }
+
+	//public function delete()
+    //{
+        //return parent::delete();
+    //}
 }

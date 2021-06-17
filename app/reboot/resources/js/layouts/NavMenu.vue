@@ -1,27 +1,19 @@
 <template>
 	<el-menu
 		:collapse="collapse"
-		default-active="1"
+		default-active="0-0"
 		text-color="#fff"
 		background-color="#545c64"
 		active-text-color="#ffd04b"
 		style="border:0">
-		<template v-for="(menu, m) in appMenu">
-			<el-menu-item v-if="!menu.list" @click="setPath(menu.path)" index="(m+1).toString()">
+		<template v-for="menu, m in appMenu">
+			<el-submenu :index="m.toString()">
 				<template #title>
 					<i :class="menu.icon"></i>
 					<span v-text="menu.name"></span>
 				</template>
-			</el-menu-item>
-
-			<el-submenu v-else :index="m.toString()">
-				<template #title>
-					<i :class="menu.icon"></i>
-					<span v-text="menu.name"></span>
-				</template>
-
-				<el-menu-item v-for="(list, l) in menu.list" :index="(m+1)+'-'+(l+1)" @click="setPath(list.path)">
-					<span v-text="list.name"></span>
+				<el-menu-item v-for="submenu,s in menu.submenu" :index="m+'-'+s" @click="$root.setPath(submenu.route_menu)">
+					{{submenu.name}}
 				</el-menu-item>
 			</el-submenu>
 		</template>
@@ -29,35 +21,89 @@
 </template>
 
 <script>
+/*
 	const appMenu = [
-		{ name:'Dashboard', icon:'el-icon-menu', path:'#!/dashboard/' },
-		{ name:'Data', icon:'el-icon-s-data', list: [
-			{ name: 'Data', path:'#!/data/' },
-		]},
-		{ name:'Management', icon: 'el-icon-setting', list: [
-			{ name: 'User', path:'#!/user/' },
-			{ name: 'Role', path:'#!/role/' },
-			{ name: 'Log' , path:'#!/log/' },
-		]},
-		{ name:'Developer', icon: 'el-icon-set-up', list: [
-			{ name: 'Route', path:'#!/route/' },
-			{ name: 'Menu', path:'#!/menu/' },
-		]},
-	];
+		{
+			"name": "Dashboard",
+			"icon": "el-icon-menu",
+			"submenu": [
+				{
+					"name": "Dashboard",
+					"route": []
+				}
+			]
+		},
+		{
+			"name": "Management",
+			"icon": "e-icon-setting",
+			"submenu": [
+				{
+					"name": "User",
+					"route": []
+				},
+				{
+					"name": "Role",
+					"route": []
+				}
 
+			]
+		},
+		{
+			"name": "Developer",
+			"icon": "e-icon-set-up",
+			"submenu": [
+				{
+					"name": "Route",
+					"route": []
+				},
+				{
+					"name": "Menu",
+					"route": []
+				}
+			]
+		}
+	];
+*/
 	export default {
 		props: ['collapse'],
 		data() {
 			return {
-				appMenu: appMenu
+				appMenu: [],
+				route: 'app/route/collection'
 			};
 		},
+		mounted(){
+			this.getMenu();
+		},
 		methods:{
-			setPath(path){
-				let page = path.split('/')[1];
-				this.$root.page = page;
-				window.location.hash = path;
-			}
+			getMenu(){
+					this.http(this.url(this.route)+'?route:method=GET&limit=-1')
+					.then(r=>{
+						var appData = r.data.data['app'].data;
+
+						var appMenu = [];
+						appData.forEach(a=>{
+							var menu = a.menu.split(' -> ');
+							var tmp	= {
+								name:menu[1],
+								route: a.route,
+								route_menu:
+									menu[1].toLowerCase()
+									+ '/'
+									+ a.route[0].route.replace('app/','').split('{')[0]
+							};
+							// has top menu
+							var index = appMenu.findIndex(m=>m.name == menu[0]);
+							if(index>-1){
+								appMenu[index].submenu.push(tmp);
+							}else{
+								appMenu.push({name:menu[0],icon:a.icon,submenu: [tmp]});
+							}
+						})
+						console.log(appMenu);
+						this.appMenu = appMenu
+					})
+			},
 		}
 	};
 </script>

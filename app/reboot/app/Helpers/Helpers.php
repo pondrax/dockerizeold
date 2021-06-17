@@ -52,6 +52,30 @@ if (!function_exists('flatten')) {
 }
 
 
+if (!function_exists('fileCsvToArray')) {
+    /**
+     * Get the current time.
+     *
+     * @param string $csv
+     *
+     * @return string
+     */
+    function fileCsvToArray($csv, $separator = ',')
+    {
+        $rows = array_map(function ($v) use ($separator) {return str_getcsv($v, $separator); }, file(base_path($csv)));
+        $header = array_shift($rows);
+        $data = [];
+        foreach ($rows as $row) {
+			//foreach($row as $id=>$col){
+				//var_dump(preg_replace('/bcrypt\((.*?)\)/', app('hash')->make("$1"), $col));
+			//}
+            $data[] = array_combine($header, $row);
+        }
+
+        return $data;
+    }
+}
+
 if (!function_exists('csvToArray')) {
     /**
      * Get the current time.
@@ -449,9 +473,10 @@ if (!function_exists('cache')) {
             );
         }
         if (!isset($arguments[1])) {
-            throw new Exception(
-                'You must specify an expiration time when setting a value in the cache.'
-            );
+			return app('cache')->forever(key($arguments[0]), reset($arguments[0]));
+            //throw new Exception(
+                //'You must specify an expiration time when setting a value in the cache.'
+            //);
         }
 
         return app('cache')->put(key($arguments[0]), reset($arguments[0]), $arguments[1]);

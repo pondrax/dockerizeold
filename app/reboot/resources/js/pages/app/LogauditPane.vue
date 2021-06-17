@@ -3,14 +3,14 @@
 		<el-col :span="12">
 			<el-button-group>
 				<el-button v-if="info.selections.length>0" type="danger" size="small" @click="confirmDelete">
-					{{ $t('message.delete') }}
+					Delete
 				</el-button>
 			</el-button-group>
 		</el-col>
 		<el-col :span="12" style="text-align:right">
 			<el-button-group>
 				<el-button type="primary" size="small" :loading="info.loading" @click="getData" plain>
-					<span v-if="info.loading" v-text="$t('message.loading')"></span>
+					<span v-if="info.loading">Loading</span>
 					<i v-else class="el-icon-refresh"></i>
 				</el-button>
 				<Export :data="data" :filename="title"></Export>
@@ -33,7 +33,7 @@
 		</el-table-column>
 		<el-table-column prop="date" label="Date" width="100" sortable="custom">
 			<template #default="{row}">
-				{{ $d(row.date, 'long') }}
+				{{ dayjs(row.date, 'datetime') }}
 			</template>
 		</el-table-column>
 		<el-table-column prop="environment" label="Env" width="80" sortable="custom"></el-table-column>
@@ -59,7 +59,7 @@
 			<el-descriptions title="" direction="vertical" :column="1" size="small" border>
 				<el-descriptions-item label="ID">{{ form.id }}</el-descriptions-item>
 				<el-descriptions-item label="Level">{{ form.level }}</el-descriptions-item>
-				<el-descriptions-item label="Date">{{ $d(form.date) }}</el-descriptions-item>
+				<el-descriptions-item label="Date">{{ dayjs(form.date, 'datetime') }}</el-descriptions-item>
 				<el-descriptions-item label="Environment">{{ form.environment }}</el-descriptions-item>
 				<el-descriptions-item label="Context">
 					<pre>{{ form.context }}</pre>
@@ -78,7 +78,7 @@
 		props: ['title'],
 		data() {
 			return {
-				endpoint: 'app/logsystem/',
+				endpoint: '/api/app/logaudit/',
 				data: [],
 				form: {},
 				error: {},
@@ -110,7 +110,7 @@
 			getData(){
 				this.info.loading = true;
 				var params = new URLSearchParams(removeEmpty(this.options));
-				this.http(this.url(this.endpoint) + 'read?' + params)
+				axios.get(this.url(this.endpoint) + 'read?' + params)
 					.then(response=>{
 						this.data = response.data.data;
 						this.options.page = response.data.current_page;

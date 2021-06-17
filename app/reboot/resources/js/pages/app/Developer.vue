@@ -1,7 +1,7 @@
 <template>
 	<el-tabs v-model="active">
 		<el-tab-pane label="Audit Log" name="audit" class="tab-card">
-			<LogPane title="Audit Log"></LogPane>
+			<LogauditPane title="Audit Log"></LogauditPane>
 		</el-tab-pane>
 		<el-tab-pane label="System Log" name="system" class="tab-card">
 			<LogSystemPane title="System Log"></LogSystemPane>
@@ -13,7 +13,7 @@
 </template>
 
 <script>
-	import LogPane from './LogPane.vue';
+	import LogauditPane from './LogauditPane.vue';
 	import LogSystemPane from './LogsystemPane.vue';
 
 	export default {
@@ -23,7 +23,7 @@
 			}
 		},
 		components: {
-			LogPane,
+			LogauditPane,
 			LogSystemPane,
 		}
 	};

@@ -1,5 +1,5 @@
 <template>
-	<el-empty style="height:80vh" description="Gagal memuat halaman"></el-empty>
+	<el-empty style="height:80vh" :description="$t('page.error')"></el-empty>
 </template>
 
 <script>

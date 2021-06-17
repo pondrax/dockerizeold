@@ -14,11 +14,11 @@ class LogsystemController extends Controller
     public function read(Request $request, $read = 'all')
     {
         define('GLOB_BRACE', 0x10);
-        $sort = $request->input('sort', 'date');
-        $order = $request->input('order', 'desc');
-        $limit = $request->input('limit', 15);
+        $limit 	= request('limit', 10);
+        $sort 	= request('sort', 'id');
+		$order	= request('order') == 'ascending'? 'asc': 'desc';
 
-        $result = LogReader::orderBy($sort, str_replace('ending', '', $order))->paginate($limit);
+        $result = LogReader::orderBy($sort, $order)->paginate($limit);
         $result = $result->toArray();
         $data = [];
         foreach ($result['data'] as $item) {

@@ -11,35 +11,52 @@ class Model extends BaseModel
     use HasFactory;
     use SoftDeletes;
 
-    protected $hidden = ['password', 'deleted_at'];
-    protected $perPage = 10;
-    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
+    protected $perPage	= 10;
+    protected $dates	= ['created_at', 'updated_at', 'deleted_at'];
 
     protected static $rules = [];
     protected static $customMessage = [];
     protected static $customAttribute = [];
 
+	protected static function boot()
+    {
+        parent::boot();
+
+        static::retrieved(function($model) {
+			//var_dump($model->id);
+        });
+
+        static::retrieved(function($model) {
+			//var_dump($model->id);
+        });
+
+        static::created(function($model) {
+			//var_dump($model->id);
+        });
+
+        static::updated(function($model) {
+			//var_dump($model->id);
+        });
+
+        static::deleting(function($model) {
+			//var_dump($model);
+			//die();
+        });
+    }
+
+
     public static function validate($request, $method, $id = null)
     {
         $rules = static::$rules[$method];
 		foreach ($rules as $key=>$rule) {
+			// if has ID (update) modify set unique value & skip required
 			if($id != null){
 				$rule = str_replace(['required',':id'], ['',$id], $rule);
 			}else{
-				$rule = str_replace([',:id'], [''], $rule);
+				$rule = str_replace(',:id', '', $rule);
 			}
-			$rule = ltrim(str_replace('||', '|', $rule), '|');
-			//d($rule, $key);
-                //d($rule, $id);
-			// if has ID (update) modify set unique value & skip required
-			//if ($id) {
-                //$rules[$key] = str_replace(['required', ':id'], ['', ','.$id], $rule);
-            //}else{
-                //$rules[$key] = str_replace(':id', '', $rule);
-			//}
-			$rules[$key] = $rule;
+			$rules[$key] = trim(str_replace('||', '|', $rule), '|');
         }
-		//d($id, $rules);
         return \Validator::validate($request->all(), $rules, static::$customMessage, static::$customAttribute);
     }
 

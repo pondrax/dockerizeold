@@ -75,6 +75,7 @@ $app->alias('mail.manager', Illuminate\Contracts\Mail\Factory::class);
 
  $app->middleware([
      App\Http\Middleware\CorsMiddleware::class,
+     App\Http\Middleware\FormdataMiddleware::class,
  ]);
 
  $app->routeMiddleware([

@@ -13,43 +13,31 @@ require('./bootstrap');
  * the application, or feel free to tweak this setup for your needs.
  */
 import App from './App.vue';
-import ElementPlus from 'element-plus';
-import 'element-plus/lib/theme-chalk/index.css';
+import {createI18n} from 'vue-i18n';
+import mixin from './plugins/mixin.js';
+import messages from './plugins/messages.js';
+import datetimeFormats from './plugins/datetime.js';
 import Export from './components/Export.vue';
 
-const app = vue.createApp(App).use(ElementPlus);
-app.config.globalProperties.$config = config;
+import ElementPlus from 'element-plus';
+import 'element-plus/lib/theme-chalk/index.css';
+import '../sass/app.scss';
 
-const mixin = {
-	methods:{
-		url(endpoint){
-			return endpoint.indexOf('http')>-1 ? endpoint: this.$config.url + endpoint;
-		},
-		http(url){
-			return axios(url);
-		},
-		dayjs(date, format){
-			var list = {
-				date 		: 'YYYY-MM-DD',
-				datetime 	: 'YYYY-MM-DD HH:mm:ss',
-				time 		: 'HH:mm:ss',
-			};
-			format = format?
-						list[format]? list[format]: format
-						: list['date'];
-			return dayjs(date).format(format);
-		}
-	}
-};
+const app = vue.createApp(App);
+const i18n = createI18n({
+	locale: 'id',
+	fallbackLocale:'en',
+	messages,
+	datetimeFormats,
+});
+
+app.use(i18n);
+app.use(ElementPlus, {
+  i18n: i18n.global.t,
+})
+
+app.config.globalProperties.$config = config;
 app.mixin(mixin);
 app.component('Export', Export);
 
 window.app = app.mount('#app');
-
-window.removeEmpty = (obj) => {
-  Object.keys(obj).forEach(k =>
-    (obj[k] && typeof obj[k] === 'object') && removeEmpty(obj[k]) ||
-    (!obj[k] && obj[k] !== undefined) && delete obj[k]
-  );
-  return obj;
-};

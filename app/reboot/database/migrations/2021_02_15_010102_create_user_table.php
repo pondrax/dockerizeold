@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateUser extends Migration
+class CreateUserTable extends Migration
 {
     /**
      * Run the migrations.
@@ -26,12 +26,12 @@ class CreateUser extends Migration
             $table->timestamp('deleted_at')->nullable();
         });
 
-        DB::table('app_user')->insert([
+        //DB::table('app_user')->insert([
 
-            ['role_id' => 1, 'name' => 'drax', 'email' => 'pondrax3@gmail.com', 'password' => bcrypt('lumen123')],
-            ['role_id' => 2, 'name' => 'admin', 'email' => 'administa@lumen.com', 'password' => bcrypt('lumen123')],
+            //['role_id' => 1, 'name' => 'drax', 'email' => 'pondrax3@gmail.com', 'password' => bcrypt('lumen123')],
+            //['role_id' => 2, 'name' => 'admin', 'email' => 'administa@lumen.com', 'password' => bcrypt('lumen123')],
 
-        ]);
+        //]);
     }
 
     /**

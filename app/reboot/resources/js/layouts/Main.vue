@@ -2,7 +2,7 @@
 	<el-container style="height: 100vh">
 		<el-aside :class="{collapse:collapse}">
 			<el-scrollbar>
-				<div style="padding:10px 20px">
+				<div class="sidebar-title">
 					<img src="https://placeimg.com/36/36/live" style="vertical-align:middle"/>
 					<span v-text="$config.name" style="padding-left:10px"></span>
 				</div>
@@ -13,9 +13,13 @@
 		<el-container>
 			<el-header height="55px">
 				<el-row>
-					<el-col>
+					<el-col :span="12">
+						<el-button type="text" @click="collapse=!collapse">
+							<i v-if="collapse" class="el-icon-s-unfold"></i>
+							<i v-else class="el-icon-s-fold"></i>
+						</el-button>
 					</el-col>
-					<el-col style="text-align:right">
+					<el-col :span="12" style="text-align:right">
 						<el-dropdown>
 							<el-avatar :size="40" :src="$root.user.photo" style="vertical-align:middle"></el-avatar>
 							<template #dropdown>
@@ -57,8 +61,8 @@
 		const pages = [
 			'dashboard',
 			'user',
-			'role',
-			'log'
+			'logs',
+			'developer',
 		];
 		return pages.reduce((prev, key)=> {
 			let capitalizeKey = key.charAt(0).toUpperCase() + key.slice(1);
@@ -100,7 +104,16 @@ color: #DBDBDB;
 background: rgb(84, 92, 100);
 }
 .el-aside.collapse {
-width: 60px ;
+width: 60px !important;
+}
+.el-aside .sidebar-title{
+padding:10px 20px;
+}
+.el-aside.collapse .sidebar-title{
+padding:10px 12px;
+}
+.el-aside.collapse .sidebar-title span{
+display:none;
 }
 .el-main{
 padding:0;
