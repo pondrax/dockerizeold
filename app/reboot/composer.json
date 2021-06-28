@@ -6,6 +6,7 @@
     "type": "project",
     "require": {
         "php": "^7.3|^8.0",
+        "genealabs/laravel-model-caching": "^0.11.3",
         "illuminate/mail": "^8.46",
         "illuminate/notifications": "^8.46",
         "illuminate/redis": "^8.46",

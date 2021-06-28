@@ -61,15 +61,17 @@
 		const pages = [
 			'dashboard',
 			'user',
-			'logs',
-			'developer',
+			'role',
+			'config',
+			'manage',
+			'log',
+			'route',
+			'menu',
 		];
 		return pages.reduce((prev, key)=> {
 			let capitalizeKey = key.charAt(0).toUpperCase() + key.slice(1);
 			prev[key] = defineAsyncComponent({
 				loader: () => import('../pages/app/'+ capitalizeKey +'.vue'),
-				delay: 0,
-				timeout: 3000,
 				errorComponent: Error,
 				loadingComponent: Loading
 			});

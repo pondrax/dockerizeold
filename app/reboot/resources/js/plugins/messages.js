@@ -5,10 +5,12 @@ export default {
 		el : idLocale.el,
 		button:{
 			refresh	: 'Muat ulang',
+			save 	: 'Simpan',
 			add 	: 'Tambah',
 			edit	: 'Ubah',
 			delete	: 'Hapus',
-			export	: 'Ekspor'
+			export	: 'Ekspor',
+			generator: 'Generator'
 		},
 		page: {
 			error	: 'Gagal memuat halaman'
@@ -16,7 +18,12 @@ export default {
 		message: {
 			hello	: 'Hi app',
 			loading	: 'Memuat...',
+			selection: 'terpilih',
+
 		},
+		confirm: {
+			delete	: 'Apakah anda yakin menghapus data?'
+		}
 	},
 	'en': {
 		message: {

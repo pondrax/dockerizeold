@@ -2,12 +2,15 @@
 
 namespace App\Models\Base;
 
+use GeneaLabs\LaravelModelCaching\Traits\Cachable;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Model extends BaseModel
 {
+    use Cachable;
     use HasFactory;
     use SoftDeletes;
 
@@ -30,6 +33,12 @@ class Model extends BaseModel
 			//var_dump($model->id);
         });
 
+        static::saving(function($model) {
+			if(request()->has('validate')){
+				return false;
+			}
+        });
+
         static::created(function($model) {
 			//var_dump($model->id);
         });
@@ -45,7 +54,7 @@ class Model extends BaseModel
     }
 
 
-    public static function validate($request, $method, $id = null)
+    public static function validate($data, $method, $id = null)
     {
         $rules = static::$rules[$method];
 		foreach ($rules as $key=>$rule) {
@@ -57,7 +66,7 @@ class Model extends BaseModel
 			}
 			$rules[$key] = trim(str_replace('||', '|', $rule), '|');
         }
-        return \Validator::validate($request->all(), $rules, static::$customMessage, static::$customAttribute);
+        return \Validator::validate($data, $rules, static::$customMessage, static::$customAttribute);
     }
 
     public function newEloquentBuilder($query)

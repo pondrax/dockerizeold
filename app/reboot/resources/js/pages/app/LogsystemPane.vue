@@ -2,17 +2,14 @@
 	<el-row type="flex" justify="space-between">
 		<el-col :span="12">
 			<el-button-group>
-				<el-button v-if="info.selections.length>0" type="danger" size="small" @click="confirmDelete">
-					{{ $t('message.delete') }}
+				<el-button v-if="info.selections" type="danger" size="small" @click="confirmDelete">
+					{{ $t('button.delete') }}
 				</el-button>
 			</el-button-group>
 		</el-col>
 		<el-col :span="12" style="text-align:right">
 			<el-button-group>
-				<el-button type="primary" size="small" :loading="info.loading" @click="getData" plain>
-					<span v-if="info.loading" v-text="$t('message.loading')"></span>
-					<i v-else class="el-icon-refresh"></i>
-				</el-button>
+				<el-button type="success" size="small" :loading="info.loading" @click="getData" icon="el-icon-refresh" plain></el-button>
 				<Export :data="data" :filename="title"></Export>
 			</el-button-group>
 		</el-col>
@@ -21,9 +18,9 @@
 	<el-table
 		height="400"
 		:data="data"
-		@selection-change="(sel)=>info.selections=sel"
-		@sort-change="({prop,order})=>{options.sort=prop;options.order=order;getData()}"
-		:default-sort="{prop:options.sort,order:options.order}"
+		@selection-change="selectionChange"
+		@sort-change="sortChange"
+		:default-sort="{prop:query.sort,order:query.order}"
 		v-loading="info.loading">
 		<el-table-column type="selection"></el-table-column>
 		<el-table-column prop="level" label="Level" width="80" sortable="custom">
@@ -41,14 +38,12 @@
 	</el-table>
 
 	<el-pagination
-		v-model:currentPage="options.page"
-		:page-sizes="[10,25,50,100]"
-		:page-size="options.limit"
+		v-model:currentPage="query.page"
+		:page-size="query.limit"
 		:total="info.total"
 		layout="prev, pager, next, sizes, total"
 		@size-change="getData"
-		@current-change="getData"
-		background>
+		@current-change="getData">
 	</el-pagination>
 
 	<el-drawer
@@ -89,7 +84,9 @@
 					'date',
 					'context.message',
 				],
-				options: {
+				options:{
+				},
+				query: {
 					id:'',
 					sort:'date',
 					order:'descending',
@@ -107,46 +104,9 @@
 			this.getData();
 		},
 		methods:{
-			getData(){
-				this.info.loading = true;
-				var params = new URLSearchParams(removeEmpty(this.options));
-				this.http(this.url(this.endpoint) + 'read?' + params)
-					.then(response=>{
-						this.data = response.data.data;
-						this.options.page = response.data.current_page;
-						this.info.total = response.data.total;
-					})
-					.catch(error=>{
-						this.$message({type: 'error', message: 'Gagal memuat data'});
-					})
-					.finally(()=>this.info.loading = false);
-			},
 			getDetail(prop){
 				this.info.drawer = true;
 				this.form = prop;
-			},
-			updateData(){
-
-			},
-			deleteData(id){
-				axios.delete(this.url(this.endpoint)+id)
-					.then(response=>{
-						this.$message({type: 'success', message: 'Data berhasil dihapus'});
-						this.getData();
-					})
-					.catch(error=>{
-						this.$message({type: 'error', message: 'Data gagal dihapus'});
-					});
-			},
-			confirmDelete(id){
-				var id = id? id: this.selections.map(sel=>sel.id).join(',');
-				this.$confirm('Anda yakin menghapus data?', 'Warning', {type: 'warning'})
-				.then(() => {
-					this.deleteData(id);
-				})
-				.catch(() => {
-					this.$message({type: 'info', message: 'Hapus dibatalkan'});
-				});
 			},
 		}
 	};

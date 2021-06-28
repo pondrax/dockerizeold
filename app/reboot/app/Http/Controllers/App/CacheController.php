@@ -20,7 +20,8 @@ class CacheController extends Controller
 			];
 		}
         $result	= [
-			'data' => $data,
+			'data'	=> $data,
+			'total'	=> count($keys)
 		];
 
         return $this->response($result);

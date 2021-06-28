@@ -11,7 +11,7 @@ class Route extends Model
      */
     protected $table	= 'app_route';
 
-    protected $hidden	= ['deletable','deleted_at'];
+    protected $hidden	= ['deleted_at'];
     protected $guarded	= [];
     protected $appends	= [];
     protected $with		= [];
@@ -24,7 +24,7 @@ class Route extends Model
     public static $rules = [
         'save' => [
             'menu_id'		=> 'required|integer',
-            'route'			=> 'required|string|unique:app_route,route,:id',
+            'route'			=> 'required|string',//|unique:app_route,route,:id',
             'method'		=> 'required|string',
             'uses'			=> 'required|string',
             'prefix'		=> 'required|string',

@@ -32,7 +32,7 @@ class RouteController extends Controller
 
     public function generate()
     {
-        $data	= Route::validate(request(), 'generate');
+        $data	= Route::validate(request()->all(), 'generate');
         $result	= Route::insert($data);
 
         return $this->response($data);
@@ -40,7 +40,7 @@ class RouteController extends Controller
 
     public function create()
     {
-        $data	= Route::validate(request(), 'save');
+        $data	= Route::validate(request()->all(), 'save');
         $result	= Route::create($data);
 
         return $this->response('created', $result, 201);
@@ -48,7 +48,7 @@ class RouteController extends Controller
 
     public function update($id)
     {
-        $data	= Route::validate(request(), 'save', $id);
+        $data	= Route::validate(request()->all(), 'save', $id);
         $result	= Route::find($id);
         $result->update($data);
 
@@ -58,7 +58,7 @@ class RouteController extends Controller
     public function delete($id)
     {
 		$ids	= explode(',', $id);
-		$result	= Route::whereIn('id', $ids)->delete();
+		$result	= Route::whereIn('id', $ids)->whereDeletable(true)->delete();
 
         return $this->response('deleted', ['id' => $id]);
     }

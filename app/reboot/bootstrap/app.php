@@ -58,7 +58,8 @@ $app->singleton(
 */
 
 $app->configure('app');
-$app->configure('mail');
+//$app->configure('mail');
+
 //$app->alias('mail.manager', Illuminate\Mail\MailManager::class);
 $app->alias('mail.manager', Illuminate\Contracts\Mail\Factory::class);
 
@@ -101,6 +102,7 @@ $app->register(Illuminate\Mail\MailServiceProvider::class);
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
 $app->register(Illuminate\Notifications\NotificationServiceProvider::class);
 
+$app->register(GeneaLabs\LaravelModelCaching\Providers\Service::class);
 $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 $app->register(Jackiedo\LogReader\LogReaderServiceProvider::class);
 

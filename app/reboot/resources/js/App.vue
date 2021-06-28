@@ -16,7 +16,7 @@
 					email	: 'admin@project.test',
 					photo	: 'https://placeimg.com/50/50/profile'
 				},
-				page: window.location.hash.split('#')[0]||'dashboard',
+				page: window.location.hash.split('/')[1]||'dashboard',
 			};
 		},
 		//created(){
@@ -27,11 +27,14 @@
 		},
 		methods:{
 			setPath(route){
-				this.page = (route.split('/')[0]);
-
-				//var menu = this.getUriMenu(menu);
-				//console.log(route);
-				window.location.hash = '#!/' +route; //+ this.getUriRouteClean(route);
+				route   	= '#!/' + route;
+				this.page 	= route.split('/')[1];
+				window.location.hash = route;
+			},
+			setSegmentPath(segment){
+				console.log(segment);
+				segment 	= segment.replace(' ', '-');
+				window.location.hash = '#!/' + this.page + '/' + segment.toLowerCase();
 			}
 		}
 	};

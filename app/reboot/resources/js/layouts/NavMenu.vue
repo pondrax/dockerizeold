@@ -1,7 +1,7 @@
 <template>
 	<el-menu
 		:collapse="collapse"
-		default-active="0-0"
+		:default-active="$root.page"
 		text-color="#fff"
 		background-color="#545c64"
 		active-text-color="#ffd04b"
@@ -12,7 +12,10 @@
 					<i :class="menu.icon"></i>
 					<span v-text="menu.name"></span>
 				</template>
-				<el-menu-item v-for="submenu,s in menu.submenu" :index="m+'-'+s" @click="$root.setPath(submenu.route_menu)">
+				<el-menu-item
+					v-for="submenu,s in menu.submenu"
+					:index="submenu.name.toLowerCase()"
+					@click="$root.setPath(submenu.route_menu)">
 					{{submenu.name}}
 				</el-menu-item>
 			</el-submenu>

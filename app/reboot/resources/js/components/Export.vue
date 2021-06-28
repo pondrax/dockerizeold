@@ -1,8 +1,10 @@
 <template>
 	<el-dropdown>
-		<el-button type="primary" size="small" plain>
-			{{ $t('button.export') }} <i class="el-icon-arrow-down el-icon--right"></i>
-		</el-button>
+		<el-tooltip :content="$t('button.export')" >
+			<el-button type="success" size="small" plain>
+				{{ $t('button.export') }} <i class="el-icon-arrow-down el-icon--right"></i>
+			</el-button>
+		</el-tooltip>
 		<template #dropdown>
 			<el-dropdown-menu>
 				<el-dropdown-item @click="download('csv')">CSV</el-dropdown-item>
