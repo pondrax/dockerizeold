@@ -11,37 +11,43 @@ class Builder extends BaseBuilder
         'order',
         'limit',
         'page',
-        'fields',
+        'field',
         'with',
         'without',
     ];
 
     private $separators = [
-        '-not'		    => '<>',
+        '-not'  	=> '<>',
         '-not-like'	=> 'not ilike',
-        '-like'		   => 'ilike',
-        '-more'		   => '>=',
-        '-less'		   => '<=',
-        '-min'		    => '>',
-        '-max'		    => '<',
-        '-between'	 => 'between',
+        '-like'  	=> 'ilike',
+        '-more' 	=> '>=',
+        '-less' 	=> '<=',
+        '-min'  	=> '>',
+        '-max'  	=> '<',
+        '-between'	=> 'between',
     ];
 
     private $casts = [
         ':date'		=> 'date',
     ];
-
+	public function filterFields($fields){
+		$fields = explode(',', $fields);
+		return $this->select($fields)->distinct();
+	}
     public function filtering()
     {
         $collections = $this;
         $filters = request()->all();
         //var_dump($filters);
         $where = [
-            'has' 	 => [],
+            'has'	=> [],
             'where'	=> [],
         ];
         foreach ($filters as $key=>$val) {
             if (in_array($key, $this->functions)) {
+				if($key == 'field'){
+					$this->filterFields($val);
+				}
                 continue;
             }
 

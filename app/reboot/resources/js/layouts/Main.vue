@@ -36,9 +36,15 @@
 			<el-main>
 				<el-scrollbar>
 					<div style="min-height:75vh;padding:10px 20px">
-						<keep-alive>
-							<component :is='$root.page'></component>
-						</keep-alive>
+						<el-tabs v-model="$root.page">
+							<template v-for="pane,label in tabs" :key="label">
+								<el-tab-pane :label="label.split('/')[1]" :name="label.toLowerCase()" class="tab-card">
+									<keep-alive>
+										<component :is="label" :title="label.split('/')[1]"></component>
+									</keep-alive>
+								</el-tab-pane>
+							</template>
+						</el-tabs>
 					</div>
 					<div class="el-footer">
 						Copyright &copy;2021.
@@ -52,78 +58,79 @@
 
 <script>
 	import { defineAsyncComponent } from 'vue';
-	import Loading from '../components/Loading.vue';
-	import Error from '../components/Error.vue';
 
-	import NavMenu from './NavMenu.vue';
+	const capitalize = (str)=>{
+		return str.replace(/(^|[\s-])\S/g, function (match) {
+			return match.toUpperCase();
+		});
+	}
 
-	const Pages = ()=>{
-		const pages = [
-			'dashboard',
-			'user',
-			'role',
-			'config',
-			'manage',
-			'log',
-			'route',
-			'menu',
-		];
+	const pages = [
+		/*'dashboard',
+		'user',
+		'role',
+		'config',
+		'manage',
+		'Log',*/
+		'dashboard/dashboard',
+		'user/user',
+		'role/role',
+		'config/config',
+		'manage/manage',
+		'route/route',
+		'route/system-log',
+		'menu/menu',
+	];
+
+	const loadComponents = ()=>{
 		return pages.reduce((prev, key)=> {
-			let capitalizeKey = key.charAt(0).toUpperCase() + key.slice(1);
-			prev[key] = defineAsyncComponent({
-				loader: () => import('../pages/app/'+ capitalizeKey +'.vue'),
-				errorComponent: Error,
-				loadingComponent: Loading
+			let group   	= key.split('/')[0];
+			let component 	= capitalize(key.split('/')[1]);
+
+			prev[group + '/' + component] = defineAsyncComponent({
+				loader: () => import('../pages/app/'+ component +'.vue'),
+				errorComponent: require('../components/Error.vue').default,
+				loadingComponent: require('../components/Loading.vue').default
 			});
 			return prev;
 		}, {});
 	}
 
+	const components = loadComponents();
+	//console.log(components);
 
 	export default {
+		components:{
+			NavMenu	: require('./NavMenu.vue').default,
+			...components
+		},
 		data() {
 			return {
-				collapse:false
+				components,
+				collapse: window.innerWidth<=720
 			};
 		},
-		components:{
-			NavMenu,
-			...Pages(),
+		created() {
+			window.addEventListener("resize", this.resizeHandler);
+		},
+		unmounted() {
+			window.removeEventListener("resize", this.resizeHandler);
+		},
+		computed:{
+			tabs(){
+				var components={};
+				Object.keys(this.components).forEach(key=>{
+					if(key.split('/')[0] == this.$root.page.split('/')[0]){
+						components[key] = this.components[key];
+					}
+				});
+				return components;
+			}
+		},
+		methods:{
+			resizeHandler(){
+				this.collapse = window.innerWidth<=720;
+			}
 		}
 	};
 </script>
-
-<style scoped>
-.el-header {
-color: #333;
-line-height: 50px;
-border-bottom:1px #ddd solid;
-background:#fff;
-}
-.el-aside {
-width: 200px !important;
-color: #DBDBDB;
-background: rgb(84, 92, 100);
-}
-.el-aside.collapse {
-width: 60px !important;
-}
-.el-aside .sidebar-title{
-padding:10px 20px;
-}
-.el-aside.collapse .sidebar-title{
-padding:10px 12px;
-}
-.el-aside.collapse .sidebar-title span{
-display:none;
-}
-.el-main{
-padding:0;
-}
-.el-footer{
-margin:15px;
-text-align:center;
-color: #333;
-font-size:12px;
-}
-</style>

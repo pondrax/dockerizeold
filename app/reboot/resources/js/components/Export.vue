@@ -1,8 +1,8 @@
 <template>
 	<el-dropdown>
 		<el-tooltip :content="$t('button.export')" >
-			<el-button type="success" size="small" plain>
-				{{ $t('button.export') }} <i class="el-icon-arrow-down el-icon--right"></i>
+			<el-button type="primary" size="small" icon="el-icon-document" plain>
+				<i class="el-icon-arrow-down el-icon--right"></i>
 			</el-button>
 		</el-tooltip>
 		<template #dropdown>

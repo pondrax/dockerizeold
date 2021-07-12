@@ -16,6 +16,9 @@ export default {
 			this.query.order=order;
 			this.getData();
 		},
+		sizeChange(val){
+			this.query.limit = val;
+		},
 		getData(){
 			this.info.loading = true;
 			var query = new URLSearchParams(removeEmpty(this.query));
@@ -34,7 +37,7 @@ export default {
 		getSelectData(){
 			Object.keys(this.options).map(key=>{
 				if(this.options[key].endpoint !=null){
-					var url = this.url(this.options[key].endpoint) + this.options[key].query;
+					var url = this.url(this.options[key].endpoint) + this.options[key].query + '&limit=-1';
 					this.http(url).then(response=>{
 						this.options[key].list = response.data.data;
 					});
@@ -100,6 +103,6 @@ export default {
 			.then(() => {
 				this.deleteData(id);
 			})
-		},
+		}
 	}
 };

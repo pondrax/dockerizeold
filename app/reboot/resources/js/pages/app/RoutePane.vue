@@ -1,33 +1,50 @@
 <template>
 	<!-- Filter -->
-	<el-row>
-	</el-row>
+	<el-form v-if="info.filter" class="filterbar" size="small" label-position="top" inline>
+		<el-form-item label="Filter Method">
+			<el-select v-model="query['method']" placeholder="Method" filterable clearable>
+				<el-option v-for="item in options.method.list" :label="item" :value="item"></el-option>
+			</el-select>
+		</el-form-item>
+		<el-form-item label="Filter Route">
+			<el-select v-model="query['route-like']" placeholder="Route" filterable clearable allow-create>
+				<el-option v-for="item in options.route.list" :label="item.route" :value="item.route"></el-option>
+			</el-select>
+		</el-form-item>
+	</el-form>
 
 	<!-- Toolbar -->
-	<el-row v-if="info.selections.length>0" class="toolbar">
+	<el-row v-if="info.selections.length>0">
 		<el-col :span="12">
-			<p>
-				{{ info.selections.length }} {{ $t('message.selections') }}
-			</p>
+			<div style="padding:5px 0">
+				{{ info.selections.length }} {{ $t('message.selection') }}
+			</div>
 		</el-col>
 		<el-col :span="12" style="text-align:right">
-			<el-button-group>
-				<el-button @click="confirmDelete" type="danger" size="small" v-text="$t('button.delete')" plain></el-button>
-			</el-button-group>
+			<el-button @click="confirmDelete" type="danger" size="small" v-text="$t('button.delete')" plain></el-button>
 		</el-col>
 	</el-row>
 	<el-row v-else>
-		<el-col :span="12">
+		<el-col :xs="24" :md="12">
+		</el-col>
+		<el-col :xs="24" :md="12" style="text-align:right">
 			<el-button-group>
+				<el-tooltip :content="$t('button.generator')">
+					<el-button @click="getDetail" type="primary" size="small" icon="el-icon-magic-stick" plain>
+						{{ $t('button.generator') }}
+					</el-button>
+				</el-tooltip>
 				<el-tooltip :content="$t('button.add')">
 					<el-button @click="getDetail" type="primary" size="small" icon="el-icon-plus" plain></el-button>
 				</el-tooltip>
-				<el-button @click="getDetail" type="primary" size="small" v-text="$t('button.generator')" plain></el-button>
-			</el-button-group>
-		</el-col>
-		<el-col :span="12" style="text-align:right">
-			<el-button-group>
-				<el-button type="success" size="small" :loading="info.loading" @click="getData" icon="el-icon-refresh" plain></el-button>
+				<el-tooltip :content="$t('button.refresh')">
+					<el-button type="primary" size="small" :loading="info.loading" @click="getData" icon="el-icon-refresh" plain>
+					</el-button>
+				</el-tooltip>
+				<el-tooltip :content="$t('button.filter')">
+					<el-button type="primary" size="small" @click="info.filter=!info.filter" icon="el-icon-collection-tag" plain>
+					</el-button>
+				</el-tooltip>
 				<Export :data="data" :filename="title"></Export>
 			</el-button-group>
 		</el-col>
@@ -38,7 +55,7 @@
 		height="400"
 		:data="data"
 		@selection-change="selectionChange"
-		@sort-change="({prop,order})=>{query.sort=prop;query.order=order;getData()}"
+		@sort-change="sortChange"
 		:default-sort="{prop:query.sort,order:query.order}"
 		v-loading="info.loading">
 		<el-table-column type="selection"></el-table-column>
@@ -67,8 +84,7 @@
 		:page-size="query.limit"
 		:total="info.total"
 		layout="prev, pager, next, sizes, total"
-		@size-change="getData"
-		@current-change="getData">
+		@size-change="sizeChange">
 	</el-pagination>
 
 	<!-- Drawer -->
@@ -130,7 +146,12 @@
 				options:{
 					menu: {
 						endpoint: 'app/menu/read',
-						query	: '?field:menu_id,menu',
+						query	: '?field=menu&sort=menu',
+						list	: []
+					},
+					route: {
+						endpoint: 'app/route/read',
+						query	: '?field=route&sort=route',
 						list	: []
 					},
 					method: {
@@ -147,6 +168,7 @@
 				info:{
 					drawer: false,
 					loading: true,
+					filter:false,
 					selections: [],
 				}
 			};
@@ -154,6 +176,14 @@
 		mounted(){
 			this.getData();
 			this.getSelectData();
+		},
+		watch:{
+			query: {
+				handler(val) {
+					this.getData();
+				},
+				deep: true
+			}
 		},
 		methods:{
 		}

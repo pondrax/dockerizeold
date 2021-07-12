@@ -1,0 +1,1826 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Dashboard COVID-19 Jawa Timur</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="author" content="Pondra Setiawan, Devan Astiko B, Farah Devi I">
+	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+	<link rel="stylesheet" href="https://idraxy.web.app/drax.css"/>
+
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+
+	<style>
+		html, body {
+		height: 100%;
+		margin: 0;
+		}
+		table.border th,
+		table.border td{
+		border:1px solid #ccc;
+		}
+		.map {
+		width: 100%;
+		height: 510px;
+		}
+		.leaflet-control-layers input[type=checkbox],
+		.leaflet-control-layers input[type=radio] {
+		opacity: 1;
+		width: 1em;
+		}
+		.leaflet-popup-content-wrapper {
+		background:#2c3e50;
+		color:#fff;
+		border-radius:3px;
+		}
+		.leaflet-popup-tip {
+		background:#2c3e50;
+		}
+
+		table th{
+		box-shadow: 0 -2px 0 #999 inset;
+        box-sizing:border-box;
+		}/*
+		table tbody tr td{
+		background:white;
+		}
+		table.striped tbody tr.active, table.striped tbody tr:hover td, table:not(.nohover) tbody tr.active, table:not(.nohover) tbody tr:hover td {
+		background: #ccc !important;
+		}
+		table.striped tbody tr.active, table.striped tbody tr:hover td, table:not(.nohover) tbody tr.active, table:not(.nohover) tbody tr:hover td{
+		background: #aaa;
+		}*/
+		.sticky.top{top:0}
+
+		.legend.info {
+		padding: 6px 8px;
+		font: 14px/16px Arial, Helvetica, sans-serif;
+		background: white;
+		background: rgba(255,255,255,0.9);
+		box-shadow: 0 0 15px rgba(0,0,0,0.2);
+		border-radius: 5px;
+		}
+		.legend.info h4 {
+		margin: 0 0 5px;
+		color: #777;
+		}
+
+		.legend {
+		line-height: 1.3;
+		color: #555;
+		}
+		.legend i {
+		width: 18px;
+		height: 15px;
+		float: left;
+		margin-right: 8px;
+		opacity: 0.7;
+		}
+
+		.leaflet-bottom.leaflet-left{
+		display:flex;
+		flex-direction:row-reverse;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		}
+		.leaflet-bottom.leaflet-left .leaflet-control{
+		flex:1 auto;
+		}
+		.label:empty {
+    display: none;
+		}
+		.empty:empty {
+    width: 50px;
+    height: 1em;
+    display: inline-block;
+    vertical-align: text-bottom;
+    background-size: 600% 100%;
+    background: linear-gradient(90deg,#ccc, #eee);
+    background-size: 600% 100%;
+    animation: gradient 1s linear infinite;
+    animation-direction: alternate;
+		}
+		@keyframes gradient {
+    0% {background-position: 0%}
+    100% {background-position: 100%}
+		}
+		sup.label{
+		font-size:.6em;
+		}
+		.label.pin {
+		position:relative;
+		font-size: 9px;
+		padding: 0;
+		border-radius: 50%;
+		border: 1px solid;
+		display: inline-block;
+		line-height:25px;
+		text-align: center;
+		white-space:nowrap;
+		transition:1s margin;
+		}
+		.label.pin:before {
+		content: '';
+		position: absolute;
+		background: transparent;
+		box-sizing:border-box;
+		border: 4px solid white;
+		top: -2px;
+		left: -2px;
+		width: calc(100% + 4px);
+		height: calc(100% + 4px);
+		z-index: -1;
+		border-radius: 50% 50% 50% 0;
+		transform:rotate(-45deg);
+		}
+		.label-text{
+		font-size:9px;
+		color:#fff;
+		text-shadow:1px 1px 3px #333;
+		white-space:nowrap;
+		text-align:center;
+		}
+		.map-pin:hover .label.pin{
+		margin-top:-20px;
+		}
+		.map-pin:hover .label.pin:before{
+		box-shadow:0 0 5px #333;
+		}
+    .text-bold{font-weight:bold}
+    .sticky{background:inherit}
+    .sticky.left{
+    float:none;
+    left:0}
+    .border{border:1px #ccc solid}
+    table th,table td{text-align:center;padding:0 10px}
+	</style>
+</head>
+<body>
+	<h2 class="px-1">Dashboard COVID-19 Jawa Timur</h2>
+	<div id="nasional" class="relative px-3">
+		<div v-if="loading" class="fixed toast text-center small" style="width:200px;top:0;left:50%;margin-left:-100px">Memuat Data ... </div>
+		<p>
+			Update Nasional :
+			<b class="empty" v-text="last_date_nasional"></b>
+			&nbsp; &nbsp;
+			Update Jawa Timur :
+			<b class="empty" v-text="last_date_jatim"></b>
+			&nbsp; &nbsp;
+			<button class="small info" onclick="STATISTIK.refreshData()">Muat ulang Data</button>
+		</p>
+
+		<div class="row gap one four-md">
+			<div class="my-1">
+				<div class="row gap two one-md" style="margin:-0.5em 0;">
+					<div class="border rounded shadow my-1 p-3">
+						<b>Konfirmasi</b>
+						<p>Jawa Timur :
+							<b class="empty" v-text="jatim.confirm"></b>
+							<sup class="label" v-text="penambahan.confirm"></sup>
+						</p>
+						<p>Nasional :
+							<b class="empty" v-text="(nasional.jumlah_positif_kum||{}).value"></b>
+							<sup class="label" v-text="(nasional.jumlah_positif||{}).value"></sup></p>
+					</div>
+					<div class="border rounded shadow my-1 p-3">
+						<b>Aktif</b>
+						<p>Jawa Timur :
+							<b class="empty" v-text="(jatim.confirm - jatim.confirm_selesai - jatim.meninggal_rtpcr)||''"></b>
+							<sup class="label error" v-text="penambahan.confirm - penambahan.confirm_selesai - penambahan.meninggal_rtpcr"></sup>
+						</p>
+						<p>Nasional :
+							<b class="empty" v-text="((nasional.jumlah_positif_kum||{}).value-(nasional.jumlah_sembuh_kum||{}).value-(nasional.jumlah_meninggal_kum||{}).value)||''"></b>
+							<sup class="label error" v-text="((nasional.jumlah_positif||{}).value-(nasional.jumlah_sembuh||{}).value-(nasional.jumlah_meninggal||{}).value)||''"></sup></p>
+					</div>
+					<div class="border rounded shadow my-1 p-3">
+						<b>Sembuh</b>
+						<p>Jawa Timur :
+							<b class="empty" v-text="jatim.confirm_selesai"></b>
+							<sup class="label success" v-text="penambahan.confirm_selesai"></sup>
+						</p>
+						<p>Nasional :
+							<b class="empty" v-text="(nasional.jumlah_sembuh_kum||{}).value"></b>
+							<sup class="label success" v-text="(nasional.jumlah_sembuh||{}).value"></sup></p>
+					</div>
+					<div class="border rounded shadow my-1 p-3">
+						<b>Meninggal</b>
+						<p>Jawa Timur :
+							<b class="empty" v-text="jatim.meninggal_rtpcr"></b>
+							<sup class="label maroon" v-text="penambahan.meninggal_rtpcr"></sup>
+						</p>
+						<p>Nasional :
+							<b class="empty" v-text="(nasional.jumlah_meninggal_kum||{}).value"></b>
+							<sup class="label maroon" v-text="(nasional.jumlah_meninggal||{}).value"></sup></p>
+					</div>
+				</div>
+			</div>
+			<div class="fill my-1">
+				<div ref='map' class="map rounded border shadow"></div>
+			</div>
+		</div>
+
+		<div class="row two three-sm four-md">
+			<h5 class="fill">
+				<span class="border-bottom-left">Overview Data di Jawa Timur (<b v-text="tanggal"></b>)</span>
+			</h5>
+			<div>
+				<input v-model="tanggal" min="2020-03-20" :max="new Date().toISOString().split('T')[0]" type="date" class="small" @change="refreshData">
+			</div>
+		</div>
+		<div class="row gap one three-sm four-md">
+			<div>
+				<v-chart class="rounded p-2" type="doughnut" height="300" :labels="['Aktif','Sembuh','Meninggal']" :datasets="[{data:[
+					jatim.confirm-jatim.confirm_selesai-jatim.meninggal_rtpcr,
+					jatim.confirm_selesai,
+					jatim.meninggal_rtpcr					],backgroundColor:['#ff6f61','#88b04b','#85144b'],borderColor:['#ff6f61cc','#88b04bcc','#85144bcc']}]"></v-chart>
+			</div>
+			<div class="fill">
+				<div class="rounded">
+				<v-chart type="bar" height="120" :labels="jatimlabel" :datasets="[
+				{label:'Konfirmasi',type:'line',data:jatimharian.map(d=>d.confirm),backgroundColor:'#45b8ac',borderColor:'transparent'},
+				{label:'CRR',type:'line',yAxisID:'B',data:jatimharian.map(d=>(d.confirm_selesai/d.confirm).toFixed(2)),backgroundColor:'#6b5b95',borderColor:'#6b5b95'},
+				{label:'CFR',type:'line',yAxisID:'B',data:jatimharian.map(d=>(d.meninggal_rtpcr/d.confirm).toFixed(2)),backgroundColor:'#000',borderColor:'#000'},
+				{label:'Meninggal',data:jatimharian.map(d=>d.meninggal_rtpcr),backgroundColor:'#85144b',borderColor:'#85144b',stack:'confirm',datalabels:{display:false},maxBarThickness:50},
+				{label:'Aktif',data:jatimharian.map(d=>d.confirm-d.confirm_selesai-d.meninggal_rtpcr),backgroundColor:'#ff6f61',borderColor:'#ff6f61',stack:'confirm',datalabels:{display:false},maxBarThickness:50},
+				{label:'Sembuh',data:jatimharian.map(d=>d.confirm_selesai),backgroundColor:'#88b04b',borderColor:'#88b04b',stack:'confirm',datalabels:{display:false},maxBarThickness:50}
+				]" :options="{
+									tooltips: {mode: 'index',intersect: false},
+									dataset:{},
+									scales: {
+										xAxes: [{ticks: {reverse: true}}],
+										yAxes: [{ticks:{display:true}},{id: 'B',position:'right',gridLines:false,ticks: {max: 1,min: 0}}]
+									}
+								}"></v-chart>
+				</div>
+			</div>
+		</div>
+
+		<div class="row gap one three-sm four-md">
+			<div>
+        	</div>
+    	</div>
+		<div class="row gap one four-md">
+			<div class="md-2">
+				<div class="border rounded shadow my-1 p-3">
+					<h5>Data Konfirmasi</h5>
+					<div class="row one two-md">
+						<div>
+							<b>Konfirmasi</b> :
+							<b class="empty" v-text="jatim.confirm"></b>
+							<sup class="label maroon" v-text="penambahan.confirm"></sup> <br>
+							<b>Aktif</b> :
+							<b class="empty" v-text="jatim.confirm - jatim.confirm_selesai - jatim.meninggal_rtpcr"></b>
+							<sup class="label maroon" v-text="penambahan.confirm - penambahan.confirm_selesai - penambahan.meninggal_rtpcr"></sup> <br>
+							<b>Sembuh</b> :
+							<b class="empty" v-text="jatim.confirm_selesai"></b>
+							<sup class="label maroon" v-text="penambahan.confirm_selesai"></sup> <br>
+							<b>Meninggal</b> :
+							<b class="empty" v-text="jatim.meninggal_rtpcr"></b>
+							<sup class="label maroon" v-text="penambahan.meninggal_rtpcr"></sup> <br>
+							<i>Case Recovery Rate</i> :
+							<b class="empty" v-text="(jatim.confirm_selesai/jatim.confirm*100).toFixed(2)"></b>%<br>
+							<i>Case Fatality Rate</i> :
+							<b class="empty" v-text="(jatim.meninggal_rtpcr/jatim.confirm*100).toFixed(2)"></b>%<br>
+
+						</div>
+						<div>
+							Bergejala :
+							<b class="empty" v-text="jatim.confirm_bergejala"></b>
+							<sup class="label maroon" v-text="penambahan.confirm_bergejala"></sup> <br>
+							Tanpa Gejala :
+							<b class="empty" v-text="jatim.confirm_tanpa_gejala"></b>
+							<sup class="label maroon" v-text="penambahan.confirm_tanpa_gejala"></sup> <br>
+							Perjalanan :
+							<b class="empty" v-text="jatim.confirm_perjalanan"></b>
+							<sup class="label maroon" v-text="penambahan.confirm_perjalanan"></sup> <br>
+							Kontak :
+							<b class="empty" v-text="jatim.confirm_kontak"></b>
+							<sup class="label maroon" v-text="penambahan.confirm_kontak"></sup> <br>
+							Tanpa Riwayat Perjalanan :
+							<b class="empty" v-text="jatim.confirm_tanpa_riwayat"></b>
+							<sup class="label maroon" v-text="penambahan.confirm_tanpa_riwayat"></sup> <br>
+						</div>
+					</div>
+                	<br>
+							Meninggal karena COVID-19 :
+							<b class="empty" v-text="jatim.covidmeninggal_rtpcr"></b>
+							<sup class="label maroon" v-text="penambahan.covidmeninggal_rtpcr"></sup> <br>
+							Meninggal karena penyakit lain (Positif COVID-19) :
+							<b class="empty" v-text="jatim.bkncovidmeninggal_rtpcr "></b>
+							<sup class="label maroon" v-text="penambahan.bkncovidmeninggal_rtpcr "></sup> <br>
+				</div>
+				<div class="border rounded shadow my-1 p-3">
+					RS Rujukan :
+					<b class="empty" v-text="jatim.konfirmasi_iso_rujukan"></b>
+					<sup class="label secondary" v-text="penambahan.konfirmasi_iso_rujukan"></sup> <br>
+					RS Darurat :
+					<b class="empty" v-text="jatim.konfirmasi_iso_darurat"></b>
+					<sup class="label secondary" v-text="penambahan.konfirmasi_iso_darurat"></sup> <br>
+					Karantina di Gedung :
+					<b class="empty" v-text="jatim.konfirmasi_iso_darurat"></b>
+					<sup class="label secondary" v-text="penambahan.konfirmasi_iso_gedung"></sup> <br>
+					Karantina Mandiri :
+					<b class="empty" v-text="jatim.konfirmasi_iso_mandiri"></b>
+					<sup class="label secondary" v-text="penambahan.konfirmasi_iso_mandiri"></sup> <br>
+				</div>
+			</div>
+			<div>
+				<div class="border rounded shadow my-1 p-3">
+					<h5>Data Suspek dan Probable</h5>
+					Suspek :
+					<b class="empty" v-text="jatim.suspect"></b>
+					<sup class="label error" v-text="penambahan.suspect"></sup> <br>
+					Probabel :
+					<b class="empty" v-text="jatim.probable"></b>
+					<sup class="label error" v-text="penambahan.probable"></sup> <br>
+					Diisolasi :
+					<b class="empty" v-text="jatim.suspect_diisolasi"></b>
+					<sup class="label error" v-text="penambahan.suspect_diisolasi"></sup> <br>
+					Discarded :
+					<b class="empty" v-text="jatim.suspect_discarded"></b>
+					<sup class="label error" v-text="penambahan.suspect_discarded"></sup> <br>
+					Meninggal :
+					<b class="empty" v-text="jatim.meninggal_probable"></b>
+					<sup class="label error" v-text="penambahan.meninggal_probable"></sup> <br>
+				</div>
+				<div class="border rounded shadow my-1 p-3">
+					RS Rujukan :
+					<b class="empty" v-text="jatim.suspectprob_iso_rujukan"></b>
+					<sup class="label secondary" v-text="penambahan.suspectprob_iso_rujukan"></sup> <br>
+					RS Darurat :
+					<b class="empty" v-text="jatim.suspectprob_iso_darurat"></b>
+					<sup class="label secondary" v-text="penambahan.suspectprob_iso_darurat"></sup> <br>
+					Karantina di Gedung :
+					<b class="empty" v-text="jatim.suspectprob_iso_gedung"></b>
+					<sup class="label secondary" v-text="penambahan.suspectprob_iso_gedung"></sup> <br>
+					Karantina Mandiri :
+					<b class="empty" v-text="jatim.suspectprob_iso_mandiri"></b>
+					<sup class="label secondary" v-text="penambahan.suspectprob_iso_mandiri"></sup> <br>
+				</div>
+			</div>
+			<div>
+				<div class="border rounded shadow my-1 p-3">
+					<h5>Kontak Erat</h5>
+					Kontak Dilacak :
+					<b class="empty" v-text="jatim.confirm_dilacak"></b>
+					<sup class="label info" v-text="penambahan.confirm_dilacak"></sup> <br>
+					Kontak Erat :
+					<b class="empty" v-text="jatim.kontak_baru"></b>
+					<sup class="label info" v-text="penambahan.kontak_baru"></sup> <br>
+					Kontak Konfirmasi :
+					<b class="empty" v-text="jatim.kontak_confirm"></b>
+					<sup class="label info" v-text="penambahan.kontak_confirm"></sup> <br>
+					Kontak Suspek :
+					<b class="empty" v-text="jatim.kontak_suspect"></b>
+					<sup class="label info" v-text="penambahan.kontak_suspect"></sup> <br>
+					Kontak Discarded :
+					<b class="empty" v-text="jatim.kontak_discarded"></b>
+					<sup class="label info" v-text="penambahan.kontak_discarded"></sup> <br>
+					Kontak Mangkir :
+					<b class="empty" v-text="jatim.kontak_mangkir"></b>
+					<sup class="label info" v-text="penambahan.kontak_mangkir"></sup> <br>
+				</div>
+				<div class="border rounded shadow my-1 p-3">
+					<b>Pemeriksaan RT-PCR</b><br>
+					Jumlah specimen/swab :
+					<b class="empty" v-text="jatim.spesimen_swab "></b>
+					<sup class="label secondary" v-text="penambahan.spesimen_swab "></sup> <br>
+                	<br>
+					<b>Surveilans Serologi</b><br>
+					Rapid :
+					<b class="empty" v-text="jatim.rapid"></b>
+					<sup class="label secondary" v-text="penambahan.rapid"></sup> <br>
+					Reaktif :
+					<b class="empty" v-text="jatim.rapid_reaktif"></b>
+					<sup class="label secondary" v-text="penambahan.rapid_reaktif"></sup> <br>
+					Reaktif periksa RT-PCR :
+					<b class="empty" v-text="jatim.reaktif_swab"></b>
+					<sup class="label secondary" v-text="penambahan.reaktif_swab"></sup> <br>
+					Reaktif periksa RT-PCR(+) :
+					<b class="empty" v-text="jatim.reaktif_swab_plus"></b>
+					<sup class="label secondary" v-text="penambahan.reaktif_swab_plus"></sup> <br>
+
+				</div>
+			</div>
+		</div>
+
+
+		<div class="secondary text-white tile rounded shadow p-3">
+			<h1 class="display-1 text-center circle mt-2" style="width:100px;height:100px;line-height:100px;border:white 3px solid;"> ! </h1>
+			<section class="ml-3 small">
+				<h4>Keterangan Data</h4>
+				<p>
+				• <b>Suspek </b> : jumlah kasus yang dinyatakan suspek pada tanggal pelaporan(bergejala).<br>
+				• <b>Kasus Probabel</b> : Kasus Suspek dengan ISPA Berat / ARDS / Meninggal dengan gambaran klinis yang meyakinkan COVID-19 DAN tidak ada hasil pemeriksaan PCR.<br>
+				• <b>Suspek Diisolasi</b> : jumlah kasus suspek yang dilakukan isolasi (mandiri maupun di fasyankes).<br>
+				• <b>Suspek Discarded</b> : Suspek dengan hasil pemeriksaan RT-PCR 2 kali negatif selama 2 hari berturut-turut dengan selang waktu >24 jam.<br>
+				<br>
+
+				• <b>Konfirmasi</b> : jumlah kasus konfirmasi kumulatif.<br>
+				• <b>Konfirmasi Bergejala</b> : jumlah kasus konfirmasi yang berasal dari kasus suspek (bergejala). <br>
+				• <b>Konfirmasi Tanpa Gejala</b> : jumlah kasus konfirmasi yang bukan berasal dari kasus suspek. <br>
+
+				• <b>Konfirmasi Perjalanan</b> : jumlah kasus konfirmasi dengan risiko riwayat perjalanan/pelaku perjalanan.<br>
+				• <b>Konfirmasi Kontak</b> : jumlah kasus konfirmasi dengan risiko riwayat kontak erat.<br>
+				• <b>Konfirmasi Tanpa Riwayat Perjalanan</b> : jumlah kasus diambil specimen/swab - (jumlah konfirmasi perjalanan + jumlah konfirmasi kontak)	.<br>
+				• <b>Selesai Isolasi</b>: jumlah kasus konfirmasi yang dinyatakan selesai masa penularan (Sembuh).<br>
+				<br>
+
+
+				• <b>Konfirmasi Dilacak </b>: jumlah kasus konfirmasi yang sedang dilakukan pelacakan kontak erat. <br>
+				• <b>Kontak Erat </b> : jumlah kontak erat yang diidentifikasi.<br>
+				• <b>Kontak Erat Suspek</b> : jumlah kontak erat yang berubah menjadi suspek.<br>
+				• <b>Kontak Erat Konfirmasi</b> : jumlah kasus konfirmasi dengan risiko riwayat kontak erat.<br>
+				• <b>Kontak Erat Mangkir dari Pemantauan</b> : jumlah kontak erat yang belum selesai masa karantina 14 hari, namun dinyatakan mangkir/tidak dapat dipantau/sulit dihubungi.<br>
+				• <b>Kontak Erat Discarded </b>: jumlah kontak erat yang sudah selesai masa karantina 14 hari.<br>
+				<br>
+
+				• <b>Meninggal RTPCR Positif</b> : Semua kasus konfirmasi yang meninggal.<br>
+				• <b>Meninggal Probabel</b> : Jumlah kasus probable yang meninggal.<br>
+				<br>
+
+
+				• <b>Jumlah Kasus Diambil Spesimen RTPCR </b>: Jumlah seluruh orang yang diambil spesimen untuk pemeriksaan RTPCR, baik suspek, follow up rapid test, maupun atas permintaan sendiri/klinisi.
+
+				</p>
+			</section>
+		</div>
+	</div>
+
+
+	<div id="statistik" class="p-3" v-if="open">
+		<div class="row two three-sm four-md px-1">
+			<h5 class="fill">
+				<span class="border-bottom-left">Data Statistik Kasus Baru (<b v-text="tanggal"></b>)</span>
+			</h5>
+			<div>
+				<input v-model="tanggal" min="2020-03-20" :max="new Date().toISOString().split('T')[0]" type="date" class="small" @change="refreshData">
+			</div>
+		</div>
+
+		<div class="row gap one two-md">
+			<div class="md-2 my-1">
+				<div class="border rounded shadow p-3">
+					<b>KONFIRMASI BARU </b>
+					(<span class="large" v-text="penambahan.confirm"></span>)<br>
+					<div class="row one three-sm six-md">
+						<div class="fill">
+							<span class="small" v-for="p in topKonfirmasi" :key="p[0].id">
+								<template v-if="p[0].penambahan.confirm>0">
+									<span v-text="p[0].penambahan.confirm"></span>
+									<span v-text="p[0].kabko"></span>,
+								</template>
+							</span>
+						</div>
+						<div class="text-right">
+							<img src="https://covid19dev.jatimprov.go.id/public/img/konfirmasi.png" style="margin:-1em 0">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="my-1">
+				<div class="border rounded shadow p-3">
+					<b>SEMBUH BARU</b>
+					(<span class="large" v-text="penambahan.confirm_selesai"></span>)<br>
+					<div class="row one three-sm six-md">
+						<div class="fill">
+							<span class="small" v-for="p in topSembuh" :key="p[0].id">
+								<template v-if="p[0].penambahan.confirm_selesai>0">
+									<span v-text="p[0].penambahan.confirm_selesai"></span>
+									<span v-text="p[0].kabko"></span>,
+								</template>
+							</span>
+						</div>
+						<div class="text-right">
+							<img src="https://covid19dev.jatimprov.go.id/public/img/sembuh.png" style="margin:-1em 0">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="my-1">
+				<div class="border rounded shadow p-3">
+					<b>MENINGGAL BARU</b>
+					(<span class="large" v-text="penambahan.meninggal_rtpcr"></span>)<br>
+					<div class="row one three-sm six-md">
+						<div class="fill">
+							<span class="small" v-for="(p,e,i) in topMeninggal" :key="p[0].id">
+								<template v-if="p[0].penambahan.meninggal_rtpcr>0">
+									<span v-text="p[0].penambahan.meninggal_rtpcr"></span>
+									<span v-text="p[0].kabko"></span>,
+								</template>
+							</span>
+						</div>
+						<div class="text-right">
+							<img src="https://covid19dev.jatimprov.go.id/public/img/meninggal.png" style="margin:-1em 0">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="my-1">
+				<div class="border rounded shadow p-3">
+					<b>SUSPEK BARU</b>
+					(<span class="large" v-text="penambahan.suspect"></span>)<br>
+					<div class="row one three-sm six-md">
+						<div class="fill">
+							<span class="small" v-for="p in persebarankabko" :key="p[0].id">
+								<template v-if="p[0].penambahan.suspect>0">
+									<span v-text="p[0].penambahan.suspect"></span>
+									<span v-text="p[0].kabko"></span>,
+								</template>
+							</span>
+						</div>
+						<div class="text-right">
+							<img src="https://covid19dev.jatimprov.go.id/public/img/suspek.png" style="margin:-1em 0">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="my-1">
+				<div class="border rounded shadow p-3">
+					<b>PROBABLE BARU</b>
+					(<span class="large" v-text="penambahan.probable"></span>)<br>
+					<div class="row one three-sm six-md">
+						<div class="fill">
+							<span class="small" v-for="p in persebarankabko" :key="p[0].id">
+								<template v-if="p[0].penambahan.probable>0">
+									<span v-text="p[0].penambahan.probable"></span>
+									<span v-text="p[0].kabko"></span>,
+								</template>
+							</span>
+						</div>
+						<div class="text-right">
+							<img src="https://covid19dev.jatimprov.go.id/public/img/probable.png" style="margin:-1em 0">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row two three-sm four-md">
+			<h5 class="fill">
+				<span class="border-bottom-left">Data Statistik Kabupaten Kota (<b v-text="fromTanggal"></b> s.d <b v-text="tanggal"></b>)</span>
+			</h5>
+			<div>
+				<input v-model="fromTanggal" min="2020-03-20" :max="new Date().toISOString().split('T')[0]" type="date" class="small" @change="refreshData">
+				<input v-model="tanggal" min="2020-03-20" :max="new Date().toISOString().split('T')[0]" type="date" class="small" @change="refreshData">
+			</div>
+		</div>
+		<div class="">
+			<div class="group small">
+				<button class="secondary" @click="mode='card'">Lihat Card</button>
+				<button class="info" @click="mode='table'">Lihat Tabel</button>
+				<button v-if="mode=='table'" class="error" @click="downloadCSV">Download</button>
+			</div>
+			<div class="group small">
+				<input v-model="filterkabko" placeholder="Filter Kabupaten/Kota">
+			</div>
+		</div>
+
+		<div v-if="mode=='card'" style="overflow-x:hidden">
+			<div class="row gap one two-md three-lg">
+				<template v-for="p in filteredPersebaran">
+					<div v-if="['RS LAPANGAN INDRAPURA','AWAK BUAH KAPAL'].indexOf(p[0].kabko)<0" class="col my-1">
+						<v-card-statistik :p="p" :prop="p[0]" :risiko="risiko" :tanggal="tanggal"></v-card-statistik>
+					</div>
+				</template>
+			</div>
+		</div>
+
+
+		<div v-if="mode=='table'" class="py-1">
+			<div class="overflow-y" style="height:80vh;padding:0">
+				<table id="table-kasus" class="border small">
+					<thead>
+						<tr class="white">
+							<th class="sticky top white">Terakhir Update</th>
+							<th class="sticky top white">Kabupaten/Kota</th>
+
+							<th class="sticky top white">Risiko <br>Sebelumnya</th>
+							<th class="sticky top white">Skor <br>Sebelumnya</th>
+							<th class="sticky top white">Status Risiko</th>
+							<th class="sticky top white">Skor Risiko</th>
+
+							<th class="sticky top white">Konfirmasi<br>(Sebelum)</th>
+							<th class="sticky top white">Konfirmasi<br>(Penambahan)</th>
+							<th class="sticky top white">Konfirmasi<br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Sembuh<br>(Sebelum)</th>
+							<th class="sticky top white">Sembuh<br>(Penambahan)</th>
+							<th class="sticky top white">Sembuh<br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Recovery Rate<br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Meninggal<br>(Sebelum)</th>
+							<th class="sticky top white">Meninggal<br>(Penambahan)</th>
+							<th class="sticky top white">Meninggal<br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Fatality Rate<br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+
+							<th class="sticky top white">Bergejala<br>(Sebelum)</th>
+							<th class="sticky top white">Bergejala<br>(Penambahan)</th>
+							<th class="sticky top white">Bergejala<br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Tanpa Gejala<br>(Sebelum)</th>
+							<th class="sticky top white">Tanpa Gejala<br>(Penambahan)</th>
+							<th class="sticky top white">Tanpa Gejala<br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Perjalanan<br>(Sebelum)</th>
+							<th class="sticky top white">Perjalanan<br>(Penambahan)</th>
+							<th class="sticky top white">Perjalanan<br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Kontak<br>(Sebelum)</th>
+							<th class="sticky top white">Kontak<br>(Penambahan)</th>
+							<th class="sticky top white">Kontak<br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Tanpa Riwayat<br>(Sebelum)</th>
+							<th class="sticky top white">Tanpa Riwayat<br>(Penambahan)</th>
+							<th class="sticky top white">Tanpa Riwayat<br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+
+							<th class="sticky top white">Suspek<br>(Sebelum)</th>
+							<th class="sticky top white">Suspek<br>(Penambahan)</th>
+							<th class="sticky top white">Suspek<br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Probabel<br>(Sebelum)</th>
+							<th class="sticky top white">Probabel<br>(Penambahan)</th>
+							<th class="sticky top white">Probabel<br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Suspek Diisolasi<br>(Sebelum)</th>
+							<th class="sticky top white">Suspek Diisolasi<br>(Penambahan)</th>
+							<th class="sticky top white">Suspek Diisolasi<br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Suspek Discarded<br>(Sebelum)</th>
+							<th class="sticky top white">Suspek Discarded<br>(Penambahan)</th>
+							<th class="sticky top white">Suspek Discarded<br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Suspek Meninggal<br>(Sebelum)</th>
+							<th class="sticky top white">Suspek Meninggal<br>(Penambahan)</th>
+							<th class="sticky top white">Suspek Meninggal<br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+
+							<th class="sticky top white">Kontak Dilacak<br>(Sebelum)</th>
+							<th class="sticky top white">Kontak Dilacak<br>(Penambahan)</th>
+							<th class="sticky top white">Kontak Dilacak<br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Kontak Baru<br>(Sebelum)</th>
+							<th class="sticky top white">Kontak Baru<br>(Penambahan)</th>
+							<th class="sticky top white">Kontak Baru<br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Kontak Konfirmasi <br>(Sebelum)</th>
+							<th class="sticky top white">Kontak Konfirmasi <br>(Penambahan)</th>
+							<th class="sticky top white">Kontak Konfirmasi <br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Kontak Suspek <br>(Sebelum)</th>
+							<th class="sticky top white">Kontak Suspek <br>(Penambahan)</th>
+							<th class="sticky top white">Kontak Suspek <br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Kontak Discarded <br>(Sebelum)</th>
+							<th class="sticky top white">Kontak Discarded <br>(Penambahan)</th>
+							<th class="sticky top white">Kontak Discarded <br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Kontak Mangkir <br>(Sebelum)</th>
+							<th class="sticky top white">Kontak Mangkir <br>(Penambahan)</th>
+							<th class="sticky top white">Kontak Mangkir <br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+
+
+							<th class="sticky top white">Pemeriksaan Spesimen <br>(Sebelum)</th>
+							<th class="sticky top white">Pemeriksaan Spesimen <br>(Penambahan)</th>
+							<th class="sticky top white">Pemeriksaan Spesimen <br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Rapid <br>(Sebelum)</th>
+							<th class="sticky top white">Rapid <br>(Penambahan)</th>
+							<th class="sticky top white">Rapid <br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Rapid Reaktif <br>(Sebelum)</th>
+							<th class="sticky top white">Rapid Reaktif <br>(Penambahan)</th>
+							<th class="sticky top white">Rapid Reaktif <br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Reaktif RT-PCR <br>(Sebelum)</th>
+							<th class="sticky top white">Reaktif RT-PCR <br>(Penambahan)</th>
+							<th class="sticky top white">Reaktif RT-PCR <br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+							<th class="sticky top white">Reaktif RT-PCR (+) <br>(Sebelum)</th>
+							<th class="sticky top white">Reaktif RT-PCR (+) <br>(Penambahan)</th>
+							<th class="sticky top white">Reaktif RT-PCR (+) <br>(<span class="nowrap" v-text="tanggal"></span>)</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="p in filteredPersebaran" :key="p[0].id" :class="{black:p[0].updated_at<tanggal}" :style="{background:p[0].updated_at<tanggal?'':colors[((risiko[p[0].kabko]||[])[0]||{}).ke_risiko]+'99'}">
+							<td><b v-text="p[0].updated_at"></b></td>
+							<td><b v-text="p[0].kabko"></b></td>
+
+							<td v-text="((risiko[p[0].kabko]||[])[0]||{}).dari_risiko"></td>
+							<td v-text="((risiko[p[0].kabko]||[])[0]||{}).dari_skor"></td>
+							<td class="text-bold" v-text="((risiko[p[0].kabko]||[])[0]||{}).ke_risiko"></td>
+							<td class="text-bold" v-text="((risiko[p[0].kabko]||[])[0]||{}).ke_skor"></td>
+
+							<td v-text="(p[1]||p[0]).confirm"></td>
+							<td v-text="p[0].penambahan.confirm"></td>
+							<td class="text-bold" v-text="p[0].confirm"></td>
+							<td v-text="(p[1]||p[0]).confirm_selesai"></td>
+							<td v-text="p[0].penambahan.confirm_selesai"></td>
+							<td class="text-bold" v-text="p[0].confirm_selesai"></td>
+							<td v-text="(p[0].confirm_selesai/p[0].confirm*100).toFixed(2)+'%'"></td>
+							<td v-text="(p[1]||p[0]).meninggal_rtpcr"></td>
+							<td v-text="p[0].penambahan.meninggal_rtpcr"></td>
+							<td class="text-bold" v-text="p[0].meninggal_rtpcr"></td>
+							<td v-text="(p[0].meninggal_rtpcr/p[0].confirm*100).toFixed(2)+'%'"></td>
+
+							<td v-text="(p[1]||p[0]).confirm_bergejala"></td>
+							<td v-text="p[0].penambahan.confirm_bergejala"></td>
+							<td v-text="p[0].confirm_bergejala"></td>
+							<td v-text="(p[1]||p[0]).confirm_tanpa_gejala"></td>
+							<td v-text="p[0].penambahan.confirm_tanpa_gejala"></td>
+							<td v-text="p[0].confirm_tanpa_gejala"></td>
+							<td v-text="(p[1]||p[0]).confirm_perjalanan"></td>
+							<td v-text="p[0].penambahan.confirm_perjalanan"></td>
+							<td v-text="p[0].confirm_perjalanan"></td>
+							<td v-text="(p[1]||p[0]).confirm_kontak"></td>
+							<td v-text="p[0].penambahan.confirm_kontak"></td>
+							<td v-text="p[0].confirm_kontak"></td>
+							<td v-text="(p[1]||p[0]).confirm_tanpa_riwayat"></td>
+							<td v-text="p[0].penambahan.confirm_tanpa_riwayat"></td>
+							<td v-text="p[0].confirm_tanpa_riwayat"></td>
+
+
+							<td v-text="(p[1]||p[0]).suspect"></td>
+							<td v-text="p[0].penambahan.suspect"></td>
+							<td v-text="p[0].suspect"></td>
+							<td v-text="(p[1]||p[0]).probable"></td>
+							<td v-text="p[0].penambahan.probable"></td>
+							<td v-text="p[0].probable"></td>
+							<td v-text="(p[1]||p[0]).suspect_diisolasi"></td>
+							<td v-text="p[0].penambahan.suspect_diisolasi"></td>
+							<td v-text="p[0].suspect_diisolasi"></td>
+							<td v-text="(p[1]||p[0]).suspect_discarded"></td>
+							<td v-text="p[0].penambahan.suspect_discarded"></td>
+							<td v-text="p[0].suspect_discarded"></td>
+							<td v-text="(p[1]||p[0]).meninggal_probable"></td>
+							<td v-text="p[0].penambahan.meninggal_probable"></td>
+							<td v-text="p[0].meninggal_probable"></td>
+
+
+							<td v-text="(p[1]||p[0]).confirm_dilacak"></td>
+							<td v-text="p[0].penambahan.confirm_dilacak"></td>
+							<td v-text="p[0].confirm_dilacak"></td>
+							<td v-text="(p[1]||p[0]).kontak_baru"></td>
+							<td v-text="p[0].penambahan.kontak_baru"></td>
+							<td v-text="p[0].kontak_baru"></td>
+							<td v-text="(p[1]||p[0]).kontak_confirm"></td>
+							<td v-text="p[0].penambahan.kontak_confirm"></td>
+							<td v-text="p[0].kontak_confirm"></td>
+							<td v-text="(p[1]||p[0]).kontak_suspect"></td>
+							<td v-text="p[0].penambahan.kontak_suspect"></td>
+							<td v-text="p[0].kontak_suspect"></td>
+							<td v-text="(p[1]||p[0]).kontak_discarded"></td>
+							<td v-text="p[0].penambahan.kontak_discarded"></td>
+							<td v-text="p[0].kontak_discarded"></td>
+							<td v-text="(p[1]||p[0]).kontak_baru"></td>
+							<td v-text="p[0].penambahan.kontak_baru"></td>
+							<td v-text="p[0].kontak_baru"></td>
+
+
+							<td v-text="(p[1]||p[0]).spesimen_swab"></td>
+							<td v-text="p[0].penambahan.spesimen_swab"></td>
+							<td v-text="p[0].spesimen_swab"></td>
+							<td v-text="(p[1]||p[0]).rapid"></td>
+							<td v-text="p[0].penambahan.rapid"></td>
+							<td v-text="p[0].rapid"></td>
+							<td v-text="(p[1]||p[0]).rapid_reaktif"></td>
+							<td v-text="p[0].penambahan.rapid_reaktif"></td>
+							<td v-text="p[0].rapid_reaktif"></td>
+							<td v-text="(p[1]||p[0]).reaktif_swab"></td>
+							<td v-text="p[0].penambahan.reaktif_swab"></td>
+							<td v-text="p[0].reaktif_swab"></td>
+							<td v-text="(p[1]||p[0]).reaktif_swab_plus"></td>
+							<td v-text="p[0].penambahan.reaktif_swab_plus"></td>
+							<td v-text="p[0].reaktif_swab_plus"></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<br>
+	</div>
+
+<script src="https://unpkg.com/vue@2.6.12/dist/vue.min.js"></script>
+<!--
+<script src="https://vuejs.org/js/vue.js"></script>
+-->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@0.7.0"></script>
+<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
+<script src="https://covid19dev.jatimprov.go.id/kab_jawa_timur.js"></script>
+
+<script>
+	const jam_rilis = new Date();
+	jam_rilis.setHours(15);
+	jam_rilis.setMinutes(0);
+	const rilis = window.location.href.indexOf('update')>-1 || new Date()>jam_rilis;
+
+	var $=function(el){
+		return document.querySelector(el);
+	}
+	var groupBy = function(xs, key) {
+		return xs.reduce(function(rv, x) {
+			(rv[x[key]] = rv[x[key]] || []).push(x);
+			return rv;
+		}, {});
+	};
+
+  var isMobile = false; //initiate as false
+  // device detection
+  if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent)) {
+      isMobile = true;
+      document.body.classList.toggle('mobile')
+  }
+
+
+
+	Vue.component('v-chart',{
+  props: ['height', 'width', 'type', 'datasets','labels', 'options'],
+  data() {
+    return {
+			colors:[
+				'#ff6f61',
+				'#2196f3',
+				'#45b8ac',
+				'#f1c40f',
+				'#6b5b95',
+				'#88b04b',
+				'#379F7A',
+				'#CC2738',
+				'#8B628A',
+				'#8FBE00',
+				'#606060'
+			],
+			chart:null,
+			typeChart:'bar',
+			data:{},
+			chart:null
+    };
+  },
+  watch: {
+    datasets(val) {
+			this.setData(val);
+			// console.log(val)
+			if(this.chart){
+				this.chart.update()
+			}
+    },
+    labels(val) {
+			this.setLabels(val);
+			if(this.chart){
+				this.chart.update()
+			}
+    },
+		type(val,old){
+			if(val!=old){
+				var self=this;
+				head.ready(function(){
+					self.typeChart=val;
+					self.initChart(val)
+				})
+			}
+			// console.log(val,old)
+		}
+  },
+  mounted() {
+		var self=this;
+		Chart.helpers.merge(Chart.defaults.global, {
+			//aspectRatio: 16/9,
+			responsive:true,
+			// tooltips: false,
+			layout: {
+				padding: {
+					top: 30,
+					right: 0,
+					bottom: 0,
+					left: 0
+				}
+			},
+			elements: {
+				line: {
+					fill: false
+				},
+				radar: {
+					fillColor: 'red'
+				}
+			},
+			legend: {
+				position: 'bottom',
+			},
+			tooltips: {
+				//mode: "index",
+				//intersect: false,
+			},
+			plugins: {
+				datalabels: {
+					backgroundColor: function(context) {
+						return context.dataset.backgroundColor;
+					},
+					borderRadius: 4,
+					color: 'white',
+					font: {
+						weight: 'bold'
+					},
+					//formatter: Math.round,
+					align:'end',
+					anchor:'end'
+				}
+			}
+		});
+		self.setLabels(self.labels);
+		self.setData(self.datasets);
+		self.initChart(self.type)
+  },
+	methods:{
+		initChart(val){
+			if(this.chart){
+				this.chart.destroy();
+			}
+			// console.log(this.data.datasets);
+			if(['doughnut','pie','radar','polarArea'].indexOf(this.type)>=0){
+				this.options={...this.options,plugins:{crosshair:false}};
+			}
+			this.chart = new Chart(this.$refs.chart.getContext('2d'), {
+				type: this.type,
+				data: this.data,
+				options: this.options,
+			});
+		},
+		setData(sets){
+			/* Inject Default Colors */
+			this.data.datasets=sets.map((data,id)=>{
+				if(['doughnut','pie','polarArea'].indexOf(this.type)>=0){
+					var color=this.colors.concat(this.colors).slice(0,data.data.length);
+					var borderColor=color.sort(()=>Math.random()-0.5);
+					var backgroundColor=borderColor.map(color=>color+'9c');
+				}else{
+					var color=this.colors.concat(this.colors)[id];
+					var borderColor=color;
+					var backgroundColor=borderColor+'cc';
+				}
+
+				return {backgroundColor,borderColor,...data}
+			})
+		},
+		setLabels(labels){
+			this.data.labels=labels;
+		}
+	},
+	template:`
+		<div>
+			<canvas ref="chart" :height="height"></canvas>
+		</div>
+	`
+});
+
+	Vue.component('v-card-statistik',{
+		props:['p','prop','risiko','tanggal'],
+		data(){
+			return{
+
+				modalOpen:false,
+				modalTren:false,
+				open:false,
+				mode:'card',
+				colors : {
+					'RISIKO TINGGI':'#e80000',
+					'RISIKO SEDANG':'#ff7722',
+					'RISIKO RENDAH':'#ffc107',
+					'RISIKO TERKONTROL':'#88b04b'
+				}
+
+			}
+		},
+		mounted(){
+			//	console.log(this.p)
+		},
+		template: `
+
+			<div class="border rounded shadow relative">
+
+
+				<div class="rounded p-3" :style="{backgroundColor: colors[((risiko[prop.kabko]||[])[0]||{}).ke_risiko]+'99'}">
+					<div class="tile">
+						<div style="width:120px;margin:-40px 0 0px -10px">
+							<v-chart class="" type="bar" height="300" :labels="p.map(d=>(d.created_at||'').split(' ')[0])" :datasets="[
+							{label:'CRR',type:'line',yAxisID:'B',data:p.map(d=>(d.confirm_selesai/d.confirm).toFixed(2)),backgroundColor:'#6b5b95',borderColor:'#6b5b95'},
+							{label:'CFR',type:'line',yAxisID:'B',data:p.map(d=>(d.meninggal_rtpcr/d.confirm).toFixed(2)),backgroundColor:'#000',borderColor:'#000'},
+							{label:'Meninggal',data:p.map(d=>d.penambahan.meninggal_rtpcr),backgroundColor:'#85144b',borderColor:'#85144b',stack:'confirm'},
+							{label:'Aktif',data:p.map(d=>d.penambahan.confirm-d.penambahan.confirm_selesai-d.penambahan.meninggal_rtpcr),backgroundColor:'#ff6f61',borderColor:'#ff6f61',stack:'confirm'},
+							{label:'Sembuh',data:p.map(d=>d.penambahan.confirm_selesai),backgroundColor:'#88b04b',borderColor:'#88b04b',stack:'confirm'}
+							]" :options="{
+									//tooltips: {enabled: true,yAlign: 'bottom'},
+									plugins: {datalabels:{display: false}},
+									legend: {display: false},
+									scales: {
+										xAxes: [{gridLines: {display: false},ticks: {reverse: true,display: false}}],
+										yAxes: [{gridLines: {display: false},ticks: {display: false}},{id: 'B',gridLines: {display: false},ticks: {display:false,max: 1,min: 0}}]
+									}
+								}"></v-chart>
+						</div>
+						<div>
+							<b class="empty border-bottom-left" v-text="prop.kabko"></b><br>
+							<span class="empty" v-text="prop.updated_at"></span>
+						</div>
+					</div>
+					<div v-if="new Date(prop.updated_at) < new Date(tanggal)" class="label black block" style="margin: 0 -1.3em;padding: 1em;">Belum diupdate</div>
+					<div v-if="(risiko[prop.kabko]||[])[0]">
+						Status saat ini :
+						<b v-text="risiko[prop.kabko][0].ke_risiko"></b><br>
+						Skor saat ini :
+						<b v-text="risiko[prop.kabko][0].ke_skor"></b><br>
+						Status sebelumnya :
+						<b v-text="risiko[prop.kabko][0].dari_risiko"></b><br>
+						Skor sebelumnya:
+						<b v-text="risiko[prop.kabko][0].dari_skor"></b><br><br>
+					</div>
+
+					<b>Konfirmasi</b> :
+					<b v-text="prop.confirm"></b>
+					<sup class="label maroon" v-text="prop.penambahan.confirm||''"></sup> <br>
+					<b>Aktif</b> :
+					<b v-text="prop.confirm - prop.confirm_selesai - prop.meninggal_rtpcr"></b>
+					<sup class="label maroon" v-text="prop.penambahan.confirm - prop.penambahan.confirm_selesai - prop.penambahan.meninggal_rtpcr"></sup> <br>
+					<b>Sembuh</b> :
+					<b v-text="prop.confirm_selesai"></b>
+					<sup class="label maroon" v-text="prop.penambahan.confirm_selesai||''"></sup> <br>
+					<b>Meninggal</b> :
+					<b v-text="prop.meninggal_rtpcr"></b>
+					<sup class="label maroon" v-text="prop.penambahan.meninggal_rtpcr||''"></sup> <br>
+					<div v-if="prop.kabko!='RS LAPANGAN INDRAPURA'">
+						<i>Recovery Rate</i> :
+						<b v-text="(prop.confirm_selesai/prop.confirm*100).toFixed(2)||''"></b>%
+						&nbsp; &nbsp;
+						<i>Fatality Rate</i> :
+						<b v-text="(prop.meninggal_rtpcr/prop.confirm*100).toFixed(2)"></b>%<br>
+						<button @click="open=!open" class="small secondary">Lihat detail</button>
+						<button @click="modalOpen=true" class="small info">Lihat Grafik</button>
+						<button @click="modalTren=true" class="small warning">Lihat Tren Penambahan</button>
+					</div>
+
+				</div>
+
+				<div v-show="open" class="overflow-y p-3" style="max-height:300px">
+					<b>Data Konfirmasi</b><br>
+					Kumulatif :
+					<span v-text="prop.confirm"></span>
+					<sup class="label maroon" v-text="prop.penambahan.confirm||''"></sup> <br>
+					Bergejala :
+					<span v-text="prop.confirm_bergejala"></span>
+					<sup class="label maroon" v-text="prop.penambahan.confirm_bergejala||''"></sup> <br>
+					Tanpa gejala :
+					<span v-text="prop.confirm_tanpa_gejala"></span>
+					<sup class="label maroon" v-text="prop.penambahan.confirm_tanpa_gejala||''"></sup> <br>
+					Perjalanan :
+					<span v-text="prop.confirm_perjalanan"></span>
+					<sup class="label maroon" v-text="prop.penambahan.confirm_perjalanan||''"></sup> <br>
+					Kontak :
+					<span v-text="prop.confirm_kontak"></span>
+					<sup class="label maroon" v-text="prop.penambahan.confirm_kontak||''"></sup> <br>
+					Tanpa riwayat perjalanan :
+					<span v-text="prop.confirm_tanpa_riwayat"></span>
+					<sup class="label maroon" v-text="prop.penambahan.confirm_tanpa_riwayat||''"></sup> <br>
+					Selesai :
+					<span v-text="prop.confirm_selesai"></span>
+					<sup class="label maroon" v-text="prop.penambahan.confirm_selesai||''"></sup> <br>
+
+					<br><b>Data Suspek</b><br>
+					Suspek :
+					<span v-text="prop.suspect"></span>
+					<sup class="label error" v-text="prop.penambahan.suspect||''"></sup> <br>
+					Probable :
+					<span v-text="prop.probable"></span>
+					<sup class="label error" v-text="prop.penambahan.probable||''"></sup> <br>
+					Diisolasi :
+					<span v-text="prop.suspect_diisolasi"></span>
+					<sup class="label error" v-text="prop.penambahan.suspect_diisolasi||''"></sup> <br>
+					Discarded :
+					<span v-text="prop.suspect_discarded"></span>
+					<sup class="label error" v-text="prop.penambahan.suspect_discarded||''"></sup> <br>
+
+					<br><b>Data Pemantauan Kontak Erat</b><br>
+					Konfirmasi dilacak :
+					<span v-text="prop.confirm_dilacak"></span>
+					<sup class="label info" v-text="prop.penambahan.confirm_dilacak||''"></sup> <br>
+					Kontak erat baru :
+					<span v-text="prop.kontak_baru"></span>
+					<sup class="label info" v-text="prop.penambahan.kontak_baru||''"></sup> <br>
+					Kontak erat menjadi suspek :
+					<span v-text="prop.kontak_suspect"></span>
+					<sup class="label info" v-text="prop.penambahan.kontak_suspect||''"></sup> <br>
+					Kontak erat menjadi konfirmasi :
+					<span v-text="prop.kontak_confirm"></span>
+					<sup class="label info" v-text="prop.penambahan.kontak_confirm||''"></sup> <br>
+					Kontak erat mangkir :
+					<span v-text="prop.kontak_mangkir"></span>
+					<sup class="label info" v-text="prop.penambahan.kontak_mangkir||''"></sup> <br>
+					Kontak erat discarded :
+					<span v-text="prop.kontak_discarded"></span>
+					<sup class="label info" v-text="prop.penambahan.kontak_discarded||''"></sup> <br>
+
+					<br><b>Data Kasus Meninggal</b><br>
+					Meninggal RT-PCR(+) :
+					<span v-text="prop.meninggal_rtpcr"></span>
+					<sup class="label gray" v-text="prop.penambahan.meninggal_rtpcr||''"></sup> <br>
+					Probable :
+					<span v-text="prop.meninggal_probable"></span>
+					<sup class="label gray" v-text="prop.penambahan.meninggal_probable||''"></sup> <br>
+
+					<br><b>Pemeriksaan RT-PCR</b><br>
+					Jumlah kasus diambil spesimen/swab :
+					<span v-text="prop.spesimen_swab"></span>
+					<sup class="label secondary" v-text="prop.penambahan.spesimen_swab||''"></sup> <br>
+
+					<br><b>Surveilans Serologi</b><br>
+					Rapid Test :
+					<span v-text="prop.rapid"></span>
+					<sup class="label secondary" v-text="prop.penambahan.rapid||''"></sup> <br>
+					Rapid Test Reaktif :
+					<span v-text="prop.rapid_reaktif"></span>
+					<sup class="label secondary" v-text="prop.penambahan.rapid_reaktif||''"></sup> <br>
+					Reaktif periksa RT-PCR :
+					<span v-text="prop.reaktif_swab"></span>
+					<sup class="label secondary" v-text="prop.penambahan.reaktif_swab||''"></sup> <br>
+					Reaktif periksa RT-PCR (+) :
+					<span v-text="prop.reaktif_swab_plus"></span>
+					<sup class="label secondary" v-text="prop.penambahan.reaktif_swab_plus||''"></sup> <br>
+
+					<br><b>Data Isolasi</b><br>
+					Konfirmasi isolasi di RS Rujukan :
+					<span v-text="prop.konfirmasi_iso_rujukan"></span>
+					<sup class="label success" v-text="prop.penambahan.konfirmasi_iso_rujukan||''"></sup> <br>
+					Konfirmasi isolasi di RS Darurat :
+					<span v-text="prop.konfirmasi_iso_darurat"></span>
+					<sup class="label success" v-text="prop.penambahan.konfirmasi_iso_darurat||''"></sup> <br>
+					Konfirmasi isolasi mandiri :
+					<span v-text="prop.konfirmasi_iso_mandiri"></span>
+					<sup class="label success" v-text="prop.penambahan.konfirmasi_iso_mandiri||''"></sup> <br>
+					Suspek/Probable isolasi di RS Rujukan :
+					<span v-text="prop.suspectprob_iso_darurat"></span>
+					<sup class="label success" v-text="prop.penambahan.suspectprob_iso_darurat||''"></sup> <br>
+					Suspek/Probable isolasi di RS Darurat :
+					<span v-text="prop.suspectprob_iso_darurat"></span>
+					<sup class="label success" v-text="prop.penambahan.suspectprob_iso_darurat||''"></sup> <br>
+					Suspek/Probable isolasi mandiri :
+					<span v-text="prop.suspectprob_iso_mandiri"></span>
+					<sup class="label success" v-text="prop.penambahan.suspectprob_iso_mandiri||''"></sup> <br>
+				</div>
+
+
+				<div v-if="modalOpen" class="modal active">
+					<div class="overlay absolute top-left bottom-right" @click="modalOpen=false"></div>
+					<article class="py-3 px-5" style="width:100%;max-width:800px">
+						<header>
+							<h3>DETAIL <span v-text="prop.kabko"></span> s.d <span v-text="tanggal"></span></h3>
+							<a class="close" @click="modalOpen=false">&times;</a>
+						</header>
+						<section class="px-5" style="height:70vh;overflow-y:auto">
+							<h4>Grafik Kasus Positif</h4>
+							<v-chart type="bar" :labels="p.map(d=>d.tanggal)" :datasets="[
+							{label:'Konfirmasi',type:'line',data:p.map(d=>d.confirm),backgroundColor:'#45b8ac',borderColor:'transparent'},
+							{label:'CRR',type:'line',yAxisID:'B',data:p.map(d=>(d.confirm_selesai/d.confirm).toFixed(2)),backgroundColor:'#6b5b95',borderColor:'#6b5b95',datalabels:{formatter:(val)=>Math.round(val*100)+'%'}},
+							{label:'CFR',type:'line',yAxisID:'B',data:p.map(d=>(d.meninggal_rtpcr/d.confirm).toFixed(2)),backgroundColor:'#000',borderColor:'#000',datalabels:{formatter:(val)=>Math.round(val*100)+'%'}},
+							{label:'Meninggal',data:p.map(d=>d.meninggal_rtpcr),backgroundColor:'#85144b',borderColor:'#85144b',stack:'confirm',maxBarThickness:50,datalabels:{display:false}},
+							{label:'Aktif',data:p.map(d=>d.confirm-d.confirm_selesai-d.meninggal_rtpcr),backgroundColor:'#ff6f61',borderColor:'#ff6f61',stack:'confirm',maxBarThickness:50,datalabels:{display:false}},
+							{label:'Sembuh',data:p.map(d=>d.confirm_selesai),backgroundColor:'#88b04b',borderColor:'#88b04b',stack:'confirm',maxBarThickness:50,datalabels:{display:false}}
+							]" :options="{
+									tooltips: {mode: 'index',intersect: false},
+									scales: {
+										xAxes: [{ticks: {reverse: true}}],
+										yAxes: [{ticks: {display: false}},{id: 'B',gridLines: {display: false},ticks: {display:false,max: 1,min: 0}}]
+									}
+								}"></v-chart>
+							<br>
+							<br>
+							<br>
+							<h4>Grafik Kasus Positif Berdasarkan Riwayat dan Gejala</h4>
+							<v-chart type="bar" :labels="p.map(d=>d.tanggal)" :datasets="[
+							{label:'Bergejala',data:p.map(d=>d.confirm_bergejala)},
+							{label:'Tanpa Gejala',data:p.map(d=>d.confirm_tanpa_gejala)},
+							{label:'Perjalanan',data:p.map(d=>d.confirm_perjalanan)},
+							{label:'Kontak',data:p.map(d=>d.confirm_kontak)},
+							{label:'Tanpa Riwayat Perjalanan',data:p.map(d=>d.confirm_tanpa_riwayat)}
+							]" :options="{tooltips: {mode: 'index',intersect: false},scales: {xAxes: [{ticks: {reverse: true}}]}}"></v-chart>
+							<br>
+							<br>
+							<br>
+							<h4>Grafik Kasus Positif Berdasarkan Perawatan</h4>
+							<v-chart type="bar" :labels="p.map(d=>d.tanggal)" :datasets="[
+							{label:'RS Rujukan',data:p.map(d=>d.konfirmasi_iso_rujukan)},
+							{label:'RS Darurat',data:p.map(d=>d.konfirmasi_iso_darurat)},
+							{label:'Gedung Observasi',data:p.map(d=>d.konfirmasi_iso_gedung)},
+							{label:'Isolasi Mandiri',data:p.map(d=>d.konfirmasi_iso_mandiri)}
+							]" :options="{tooltips: {mode: 'index',intersect: false},scales: {xAxes: [{ticks: {reverse: true}}]}}"></v-chart>
+							<br>
+							<br>
+							<br>
+							<h4>Grafik Kasus Suspek/Probable</h4>
+							<v-chart type="bar" :labels="p.map(d=>d.tanggal)" :datasets="[
+							{label:'Suspek',data:p.map(d=>d.suspect)},
+							{label:'Probabel',data:p.map(d=>d.probable)},
+							{label:'Diisolasi',data:p.map(d=>d.suspect_diisolasi)},
+							{label:'Discarded',data:p.map(d=>d.suspect_discarded)},
+							{label:'Meninggal',data:p.map(d=>d.meninggal_probable)}
+							]" :options="{tooltips: {mode: 'index',intersect: false},scales: {xAxes: [{ticks: {reverse: true}}]}}"></v-chart>
+							<br>
+							<br>
+							<br>
+							<h4>Grafik Kasus Suspek/Probable Berdasarkan Perawatan</h4>
+							<v-chart type="bar" :labels="p.map(d=>d.tanggal)" :datasets="[
+							{label:'RS Rujukan',data:p.map(d=>d.suspectprob_iso_rujukan)},
+							{label:'RS Darurat',data:p.map(d=>d.suspectprob_iso_darurat)},
+							{label:'Gedung Observasi',data:p.map(d=>d.suspectprob_iso_gedung)},
+							{label:'Isolasi Mandiri',data:p.map(d=>d.suspectprob_iso_mandiri)}
+							]" :options="{tooltips: {mode: 'index',intersect: false},scales: {xAxes: [{ticks: {reverse: true}}]}}"></v-chart>
+							<br>
+							<br>
+							<br>
+							<h4>Grafik Pemantauan Kontak Erat</h4>
+							<v-chart type="bar" :labels="p.map(d=>d.tanggal)" :datasets="[
+							{label:'Konfirmasi dilacak',data:p.map(d=>d.confirm_dilacak)},
+							{label:'Kontak erat baru',data:p.map(d=>d.kontak_baru)},
+							{label:'Kontak erat menjadi suspek',data:p.map(d=>d.kontak_suspect)},
+							{label:'Kontak erat menjadi konfirmasi',data:p.map(d=>d.kontak_confirm)},
+							{label:'Kontak erat mangkir',data:p.map(d=>d.kontak_mangkir)},
+							{label:'Kontak erat discarded',data:p.map(d=>d.kontak_discarded)}
+							]" :options="{tooltips: {mode: 'index',intersect: false},scales: {xAxes: [{ticks: {reverse: true}}]}}"></v-chart>
+							<br>
+							<br>
+							<br>
+							<h4>Grafik Surveilans Serologi</h4>
+							<v-chart type="bar" :labels="p.map(d=>d.tanggal)" :datasets="[
+							{label:'Rapid',data:p.map(d=>d.rapid)},
+							{label:'Rapid Reaktif',data:p.map(d=>d.rapid_reaktif)},
+							{label:'RTPCR',data:p.map(d=>d.reaktif_swab)},
+							{label:'RT PCR (+)',data:p.map(d=>d.reaktif_swab_plus)}
+							]" :options="{tooltips: {mode: 'index',intersect: false},scales: {xAxes: [{ticks: {reverse: true}}]}}"></v-chart>
+						</section>
+					</article>
+				</div>
+
+				<div v-if="modalTren" class="modal active">
+					<div class="overlay absolute top-left bottom-right" @click="modalTren=false"></div>
+					<article class="py-3 px-5" style="width:100%;max-width:800px">
+						<header>
+							<h3>TREN <span v-text="prop.kabko"></span> s.d <span v-text="tanggal"></span></h3>
+							<a class="close" @click="modalTren=false">&times;</a>
+						</header>
+						<section class="px-5" style="height:70vh;overflow-y:auto">
+							<h4>Grafik Tren Penambahan Kasus Positif</h4>
+							<v-chart type="bar" :labels="p.map(d=>d.tanggal)" :datasets="[
+							{label:'Konfirmasi Baru',data:p.map(d=>d.penambahan.confirm),backgroundColor:'#45b8ac',borderColor:'#45b8ac',maxBarThickness:50},
+							{label:'Meninggal',data:p.map(d=>d.penambahan.meninggal_rtpcr),backgroundColor:'#85144b',borderColor:'#85144b',maxBarThickness:50},
+							{label:'Aktif',data:p.map(d=>(d.penambahan.confirm-d.penambahan.confirm_selesai-d.penambahan.meninggal_rtpcr)>0?(d.penambahan.confirm-d.penambahan.confirm_selesai-d.penambahan.meninggal_rtpcr):0),backgroundColor:'#ff6f61',borderColor:'#ff6f61',maxBarThickness:50},
+							{label:'Sembuh',data:p.map(d=>d.penambahan.confirm_selesai),backgroundColor:'#88b04b',borderColor:'#88b04b',maxBarThickness:50}
+							]" :options="{
+									tooltips: {mode: 'index',intersect: false},
+									scales: {
+										xAxes: [{ticks: {reverse: true}}],
+										yAxes: [{ticks: {display: false}},{id: 'B',gridLines: {display: false},ticks: {display:false,max: 1,min: 0}}]
+									}
+								}"></v-chart>
+							<br>
+							<br>
+							<br>
+							<h4>Grafik Tren Kasus Positif Berdasarkan Riwayat dan Gejala</h4>
+							<v-chart type="bar" :labels="p.map(d=>d.tanggal)" :datasets="[
+							{label:'Bergejala',data:p.map(d=>d.penambahan.confirm_bergejala)},
+							{label:'Tanpa Gejala',data:p.map(d=>d.penambahan.confirm_tanpa_gejala)},
+							{label:'Perjalanan',data:p.map(d=>d.penambahan.confirm_perjalanan)},
+							{label:'Kontak',data:p.map(d=>d.penambahan.confirm_kontak)},
+							{label:'Tanpa Riwayat Perjalanan',data:p.map(d=>d.penambahan.confirm_tanpa_riwayat)}
+							]" :options="{tooltips: {mode: 'index',intersect: false},scales: {xAxes: [{ticks: {reverse: true}}]}}"></v-chart>
+							<br>
+							<br>
+							<br>
+							<h4>Grafik Tren Kasus Positif Berdasarkan Perawatan</h4>
+							<v-chart type="bar" :labels="p.map(d=>d.tanggal)" :datasets="[
+							{label:'RS Rujukan',data:p.map(d=>d.penambahan.konfirmasi_iso_rujukan)},
+							{label:'RS Darurat',data:p.map(d=>d.penambahan.konfirmasi_iso_darurat)},
+							{label:'Gedung Observasi',data:p.map(d=>d.penambahan.konfirmasi_iso_gedung)},
+							{label:'Isolasi Mandiri',data:p.map(d=>d.penambahan.konfirmasi_iso_mandiri)}
+							]" :options="{tooltips: {mode: 'index',intersect: false},scales: {xAxes: [{ticks: {reverse: true}}]}}"></v-chart>
+							<br>
+							<br>
+							<br>
+							<h4>Grafik Tren Kasus Suspek/Probable</h4>
+							<v-chart type="bar" :labels="p.map(d=>d.tanggal)" :datasets="[
+							{label:'Suspek',data:p.map(d=>d.penambahan.suspect)},
+							{label:'Probabel',data:p.map(d=>d.penambahan.probable)},
+							{label:'Diisolasi',data:p.map(d=>d.penambahan.suspect_diisolasi)},
+							{label:'Discarded',data:p.map(d=>d.penambahan.suspect_discarded)},
+							{label:'Meninggal',data:p.map(d=>d.penambahan.meninggal_probable)}
+							]" :options="{tooltips: {mode: 'index',intersect: false},scales: {xAxes: [{ticks: {reverse: true}}]}}"></v-chart>
+							<br>
+							<br>
+							<br>
+							<h4>Grafik Tren Kasus Suspek/Probable Berdasarkan Perawatan</h4>
+							<v-chart type="bar" :labels="p.map(d=>d.tanggal)" :datasets="[
+							{label:'RS Rujukan',data:p.map(d=>d.penambahan.suspectprob_iso_rujukan)},
+							{label:'RS Darurat',data:p.map(d=>d.penambahan.suspectprob_iso_darurat)},
+							{label:'Gedung Observasi',data:p.map(d=>d.penambahan.suspectprob_iso_gedung)},
+							{label:'Isolasi Mandiri',data:p.map(d=>d.penambahan.suspectprob_iso_mandiri)}
+							]" :options="{tooltips: {mode: 'index',intersect: false},scales: {xAxes: [{ticks: {reverse: true}}]}}"></v-chart>
+							<br>
+							<br>
+							<br>
+							<h4>Grafik Tren Pemantauan Kontak Erat</h4>
+							<v-chart type="bar" :labels="p.map(d=>d.tanggal)" :datasets="[
+							{label:'Konfirmasi dilacak',data:p.map(d=>d.penambahan.confirm_dilacak)},
+							{label:'Kontak erat baru',data:p.map(d=>d.penambahan.kontak_baru)},
+							{label:'Kontak erat menjadi suspek',data:p.map(d=>d.penambahan.kontak_suspect)},
+							{label:'Kontak erat menjadi konfirmasi',data:p.map(d=>d.penambahan.kontak_confirm)},
+							{label:'Kontak erat mangkir',data:p.map(d=>d.penambahan.kontak_mangkir)},
+							{label:'Kontak erat discarded',data:p.map(d=>d.penambahan.kontak_discarded)}
+							]" :options="{tooltips: {mode: 'index',intersect: false},scales: {xAxes: [{ticks: {reverse: true}}]}}"></v-chart>
+							<br>
+							<br>
+							<br>
+							<h4>Grafik Tren Surveilans Serologisme</h4>
+							<v-chart type="bar" :labels="p.map(d=>d.tanggal)" :datasets="[
+							{label:'Rapid',data:p.map(d=>d.penambahan.rapid)},
+							{label:'Rapid Reaktif',data:p.map(d=>d.penambahan.rapid_reaktif)},
+							{label:'RTPCR',data:p.map(d=>d.penambahan.reaktif_swab)},
+							{label:'RT PCR (+)',data:p.map(d=>d.penambahan.reaktif_swab_plus)}
+							]" :options="{tooltips: {mode: 'index',intersect: false},scales: {xAxes: [{ticks: {reverse: true}}]}}"></v-chart>
+						</section>
+					</article>
+				</div>
+
+			</div>
+
+		`
+	});
+
+
+</script>
+<script>
+
+function formatDate(date) {
+    var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+
+    if (month.length < 2)
+        month = '0' + month;
+    if (day.length < 2)
+        day = '0' + day;
+
+    return [year, month, day].join('-');
+}
+	var tanggalUpdate = formatDate(rilis?new Date():new Date(new Date().setDate(new Date().getDate()-1)));
+
+	var NASIONAL = new Vue({
+		el : '#nasional',
+		data : {
+        	loading:true,
+			jatim:{},
+			jatimlabel:[],
+			jatimharian:[],
+			penambahan:{},
+			overlays:{
+					"Epidemiologi":L.featureGroup(),
+					"Persebaran":L.featureGroup(),
+					"Jumlah Konfirmasi":L.featureGroup(),
+				},
+			nasional:{},
+			map:null,
+			tanggal : tanggalUpdate,
+			last_date_nasional:null,
+			last_date_jatim:null
+		},
+		mounted(){
+			var mbAttr = 'Map By <a href="https://idraxy.web.app/">Draxgist</a>',
+					mbUrl = 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+
+			var grayscale	 = L.tileLayer(mbUrl, {id: 'mapbox/light-v9', tileSize: 512, zoomOffset: -1, attribution: mbAttr}),
+				streets	= L.tileLayer(mbUrl, {id: 'mapbox/streets-v11', tileSize: 512, zoomOffset: -1, attribution: mbAttr});
+
+			var baseLayers = {
+				"Empty": L.tileLayer(''),
+				"Grayscale": grayscale,
+				"Streets": streets
+			};
+
+			this.map = L.map(this.$refs.map, {
+				center: [-7.75,112.5],
+				zoom: 8.3,
+				// wheelPxPerZoomLevel: 110,
+				zoomDelta: 0.2,
+				zoomSnap: 0.2,
+				minZoom: 2,
+				maxZoom: 20,
+				maxBounds:[
+					[-9.319,110.868],
+					[-5.713,116.103]
+				],
+				layers: [
+					grayscale,
+					this.overlays["Epidemiologi"],
+					this.overlays["Persebaran"],
+					// this.overlays["Jumlah Konfirmasi"]
+				]
+			});///
+
+			L.control.layers(baseLayers, this.overlays,{collapsed:true}).addTo(this.map);
+
+			L.Path.mergeOptions({
+				fillColor:'#fff',
+				weight: 2,
+				opacity: 1,
+				color: "#fff",
+				fillOpacity: 1.5
+			});
+			// this.map.on('overlayadd', e => legends[e.name].addTo(this.map) );
+			// this.map.on('overlayremove', e => legends[e.name].remove() );
+
+			var legend = L.control({position: 'bottomleft'});
+			legend.onAdd = function (map) {
+				var div = L.DomUtil.create('div', 'info legend');
+				div.innerHTML=`<b>STATUS RISIKO</b><br>
+					<i style="background:#e80000;"></i> RISIKO TINGGI<br>
+					<i style="background:#ff7722;"></i> RISIKO SEDANG<br>
+					<i style="background:#ffc107;"></i> RISIKO RENDAH<br>
+					<i style="background:#88b04b;"></i> RISIKO TERKONTROL
+				`;
+				return div;
+			}
+			legend.addTo(this.map);
+			var legend = L.control({position: 'bottomleft'});
+			legend.onAdd = function (map) {
+				var div = L.DomUtil.create('div', 'info legend');
+				div.innerHTML=`<b>KASUS KUMULATIF</b><br>
+					<i style="background:#85144b;"></i> POSITIF<br>
+					<i style="background:#ff6f61;"></i> SUSPEK<br>
+					<i style="background:#45b8ac;"></i> PROBABEL
+				`;
+				return div;
+			}
+			legend.addTo(this.map);
+
+		},
+		methods:{
+			refreshData(){
+				STATISTIK.tanggal = this.tanggal;
+				STATISTIK.refreshData();
+			},
+			refreshRisiko(){
+				var colors = {
+					'RISIKO TINGGI':'#e80000',
+					'RISIKO SEDANG':'#ff7722',
+					'RISIKO RENDAH':'#ffc107',
+					'RISIKO TERKONTROL':'#88b04b'
+				};
+
+				fetch("https://covid19dev.jatimprov.go.id/xweb/drax/nasional")
+				.then(r=>r.json())
+				.then(response=>{
+					this.last_date_nasional = response.key_as_string.split('T')[0];
+					this.nasional = response
+				});
+				fetch("https://covid19dev.jatimprov.go.id/xweb/drax/risiko")
+				.then(r=>r.json())
+				.then(response=>{
+					var risiko = response.map(risk=>{
+						if(risk)
+							return Object.assign(risk,{
+								kdkab:('kabupaten '+risk.kdkab).toLowerCase().replace('kabupaten kota','kota')
+							 });
+					}).filter(risk=>risk);
+					risiko = groupBy(risiko,'kdkab');
+					this.overlays["Epidemiologi"].clearLayers();
+					this.overlays["Persebaran"].clearLayers();
+					this.overlays["Jumlah Konfirmasi"].clearLayers();
+
+					L.geoJson(kab_geojson,{
+						style:({properties})=>{
+							var kdkab = properties.name.toLowerCase();
+							var warna = risiko[kdkab][0].ke_risiko;
+							return {
+								fillColor:colors[warna],
+								fillOpacity:0.7
+							}
+						},
+						onEachFeature:({properties},layer)=>{
+							var kdkab = properties.name.replace('Kabupaten','KAB.').toUpperCase();
+							var namakab = tooltip = properties.name;
+							// console.log(namakab);
+							if(STATISTIK.persebarankabko[kdkab]){
+								var data = STATISTIK.persebarankabko[kdkab][0];
+								var popup=`
+									<div class="text-center">
+										<h5>${properties.name}</h5>
+										<div class="row two" style="width:240px">
+											<div>
+												<b class="large">Konfirmasi</b><br>
+												Konfirmasi : ${data.confirm}<br>
+												Aktif : ${data.confirm - data.confirm_selesai - data.meninggal_rtpcr}<br>
+												Sembuh : ${data.confirm_selesai}<br>
+												Meninggal : ${data.meninggal_rtpcr}<br>
+											</div>
+											<div>
+												<b class="large">Suspek</b><br>
+												Suspek : ${data.suspect}<br>
+												Probable : ${data.probable}<br>
+												Diisolasi : ${data.suspect_diisolasi}<br>
+												Discarded : ${data.suspect_discarded}<br>
+											</div>
+										</div>
+										<div>Update Terakhir: ${data.updated_at}</div>
+									</div>
+								`;
+
+								layer.addTo(this.overlays["Epidemiologi"])
+								// console.log(kdkab);
+								var latOffset=0,lngOffset=0;
+								if(['KAB. MOJOKERTO','KAB. MADIUN','KAB. KEDIRI','KAB. BLITAR'].indexOf(kdkab)>-1){
+										latOffset = -0.1;
+								}
+								var pos = [layer.getCenter().lat+latOffset,layer.getCenter().lng+lngOffset];
+								var icon =L.divIcon({
+									className: 'location-pin',
+									html: `
+										<div class="map-pin relative" style="width:100px;margin-left:-20px">
+											<div class="flex center mb-1" style="pointer-events:none">
+												${data.confirm<=0?'':
+													`<div style="width:25px;height:25px" class="label pin maroon">${data.confirm}</div>`
+												}
+												${data.suspect<=0?'':
+													`<div style="width:25px;height:25px" class="label pin red">${data.suspect}</div>`
+												}
+												${data.probable<=0?'':
+													`<div style="width:25px;height:25px" class="label pin info">${data.probable}</div>`
+												}
+											</div>
+											<div class="label-text">${data.kabko.replace('KAB. ','')}</div>
+										</div>
+									`,
+									iconSize: [60, 30],
+									iconAnchor: [30,25],
+									tooltipAnchor: [20,0],
+								});
+								// var circle = L.circle(pos,(parseInt(data.penambahan.confirm)||0)*100,{fillColor:'#2196f399'})
+								//.addTo(this.overlays["Jumlah Konfirmasi"]);
+								var marker = L.marker(pos,{icon:icon}).addTo(this.overlays["Persebaran"])
+								marker.bindPopup(popup)
+								marker.bindTooltip(tooltip)
+							}
+						}
+					}).addTo(this.overlays["Epidemiologi"]);
+
+
+
+					var jatimrisiko = {};
+					Object.keys(risiko).map(r=>{
+						jatimrisiko[r.replace('kabupaten','KAB.').toUpperCase()]=risiko[r]
+					})
+					this.loading = false;
+					STATISTIK.risiko = jatimrisiko;
+				});
+			}
+		}
+	});
+</script>
+<script>
+	Array.prototype.diff = function(a){
+		return this.filter(function(i){return a.indexOf(i)<0;});
+	};
+	var STATISTIK = new Vue({
+		el : '#statistik',
+		data : {
+			response:'',
+			persebaran : [],
+			persebarankabko : Array(8).fill([{penambahan:{}}]),
+			filterkabko : '',
+			// jatim:{},
+			penambahan:{},
+			props:'suspect,probable,suspect_diisolasi,suspect_discarded,confirm,confirm_bergejala,confirm_tanpa_gejala,confirm_perjalanan,confirm_kontak,confirm_tanpa_riwayat,confirm_selesai,confirm_dilacak,kontak_baru,kontak_suspect,kontak_confirm,kontak_mangkir,kontak_discarded,meninggal_rtpcr,meninggal_probable,covidmeninggal_rtpcr,bkncovidmeninggal_rtpcr,spesimen_swab,rapid,rapid_reaktif,reaktif_swab,reaktif_swab_plus,suspectprob_iso_rujukan,suspectprob_iso_darurat,suspectprob_iso_mandiri,konfirmasi_iso_rujukan,konfirmasi_iso_darurat,konfirmasi_iso_mandiri,suspectprob_iso_gedung,konfirmasi_iso_gedung,ke_iso_mandiri'.split(','),
+			risiko:{},
+			open:true,
+			mode:'card',
+			fromTanggal: formatDate(new Date(new Date().setDate(new Date().getDate()-7))),
+			tanggal : tanggalUpdate,
+			colors : {
+				'RISIKO TINGGI':'#e80000',
+				'RISIKO SEDANG':'#ff7722',
+				'RISIKO RENDAH':'#ffc107',
+				'TIDAK TERDAMPAK':'#88b04b'
+			}
+		},
+		mounted(){
+			this.refreshData();
+			//this.open = JSON.parse(localStorage.getItem('STATISTIK-open'))||[];
+		},
+		computed:{
+			topKonfirmasi(){
+				// console.log(Object.entries(this.persebarankabko));
+				// return this.persebarankabko;
+				var res=Object.entries(this.persebarankabko).sort((a,b)=>{
+					// console.log(b[1][0].penambahan||{},a[1][0].penambahan||{});
+					return b[1][0].penambahan.confirm - a[1][0].penambahan.confirm;
+					// return 0;
+				})
+				return Object.fromEntries(res);
+			},
+			topSembuh(){
+				// return this.persebarankabko;
+				var res=Object.entries(this.persebarankabko).sort((a,b)=>{
+					if(!a[1][0].penambahan){
+						return -1
+					}
+					return b[1][0].penambahan.confirm_selesai-a[1][0].penambahan.confirm_selesai;
+				})
+				return Object.fromEntries(res);
+			},
+			topMeninggal(){
+				return this.persebarankabko;
+				var res=Object.entries(this.persebarankabko).sort((a,b)=>{
+					if(!a[1][0].penambahan){
+						return -1
+					}
+					return b[1][0].penambahan.meninggal_rtpcr-a[1][0].penambahan.meninggal_rtpcr;
+				})
+				return Object.fromEntries(res);
+			},
+			filteredPersebaran(){
+				// return this.persebarankabko;
+				// return this.persebarankabko;
+				var filtered = {};
+					Object.keys(this.persebarankabko).filter(p=>{
+						if(p.toLowerCase().indexOf(this.filterkabko.toLowerCase())>-1){
+							filtered[p] = this.persebarankabko[p];
+						}
+					})
+				return filtered;
+			}
+		},
+		methods:{
+			toggleDetail(kabko){
+				var isOpen = this.open.indexOf(kabko)>-1?true:false;
+				if(isOpen){
+					this.open.splice(this.open.indexOf(kabko),1);
+				}else{
+					this.open.push(kabko)
+				}
+				//localStorage.setItem('STATISTIK-open',JSON.stringify(this.open))
+
+			},
+			refreshData(){
+				NASIONAL.loading = true;
+				NASIONAL.last_date_nasional = null;
+				NASIONAL.last_date_jatim = null;
+				fetch("https://covid19dev.jatimprov.go.id/xweb/drax/data/"+this.tanggal+'/'+this.fromTanggal)
+				.then(r=>r.json())
+				.then(response=>{
+					clearInterval(window.refreshTime);
+					window.refreshTime = setTimeout(()=>this.refreshData(),5*60*1000);
+					if(this.response!=JSON.stringify(response)){
+						console.log('changed');
+						this.response=JSON.stringify(response);
+						response = response.map(r=>Object.assign(r,{penambahan:{}}));
+						this.persebaran = response;//.reverse();
+						this.persebarankabko = groupBy(this.persebaran,'kabko');
+
+						var dataTanggal = groupBy(this.persebaran,'tanggal');
+						var jatim =[];
+						var jatimPenambahan =[];
+						var jumlahHari = Object.keys(dataTanggal).length;
+
+						Object.keys(dataTanggal).map((tanggal,idx)=>{
+							var tanggalSebelum = new Date(tanggal);
+							tanggalSebelum.setDate(tanggalSebelum.getDate()-1);
+							tanggalSebelum = formatDate(tanggalSebelum);
+							var dataKabko = groupBy(dataTanggal[tanggal],'kabko');
+							var dataSebelum = groupBy(dataTanggal[tanggalSebelum]||[],'kabko');
+
+							// Check if not yet filled data, then get from previous
+							var diff = Object.keys(dataSebelum).diff(Object.keys(dataKabko));
+							console.log(diff);
+							diff.map(d=>{
+								dataKabko[d]=dataSebelum[d];
+							});
+							// console.log(dataKabko, Object.keys(dataKabko).length);
+							var persebaranjatim = {tanggal};
+							var penambahanjatim = {tanggal};
+
+							Object.keys(dataKabko).map(kabko=>{
+								var sekarang=((dataKabko[kabko]||{})[0])||{}
+									sebelum=((dataSebelum[kabko]||{})[0])||{};
+								var penambahankabko={tanggal,kabko};
+
+								this.props.map(prop=>{
+									var dataprop = parseInt(sekarang[prop]);
+									var penambahan = parseInt(sekarang[prop]) - parseInt(sebelum[prop])||0;
+									var penambahanPlus = penambahan>0?penambahan:0;
+									penambahankabko[prop] = penambahan>0?'+'+penambahan: penambahan;
+
+
+									persebaranjatim[prop] = persebaranjatim[prop]?persebaranjatim[prop]+ dataprop: dataprop;
+									penambahanjatim[prop] = '+'+(penambahanjatim[prop]?parseInt(penambahanjatim[prop])+ penambahanPlus : penambahanPlus);
+								});
+
+								if(this.persebarankabko[kabko][idx]){
+									this.persebarankabko[kabko][idx]['penambahan'] = penambahankabko;
+								}
+							});
+							jatim.push(persebaranjatim);
+							jatimPenambahan.push(penambahanjatim);
+						});
+						this.penambahan = jatimPenambahan[0];
+						NASIONAL.jatim = jatim[0];
+						NASIONAL.jatimlabel = Object.keys(dataTanggal).reverse();
+						NASIONAL.jatimharian = jatim.reverse();
+						NASIONAL.penambahan = jatimPenambahan[0];
+					}
+					NASIONAL.last_date_jatim = response[0].updated_at;
+					NASIONAL.refreshRisiko();
+				// }).catch(e=>{
+					// console.error(e)
+					// clearInterval(window.refreshTime);
+					// window.refreshTime = setTimeout(()=>this.refreshData(),5*1000);
+				});
+			},
+			downloadCSV(){
+				var el='table';
+				var config = {
+					title	: 'Persebaran',
+					width	: 21,
+					height	: 30,
+					margin	: {
+						top		: 2,
+						bottom	: 2,
+						left	: 2,
+						right	: 2,
+					},
+					orientation: 'potrait',
+				};
+				var template =
+`<html xmlns:v="urn:schemas-microsoft-com:vml"
+xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:x="urn:schemas-microsoft-com:office:excel"
+xmlns:m="http://schemas.microsoft.com/office/2004/12/omml"
+xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<title>${config.title}</title>
+	<!--[if gte mso 9]>
+	<xml>
+	<o:DocumentProperties>
+	 <o:Author>guest</o:Author>
+	 <o:Created>2020-09-12T21:19:43</o:Created>
+	 <o:LastSaved>2020-09-12T21:21:40</o:LastSaved>
+	</o:DocumentProperties>
+	<o:CustomDocumentProperties>
+	 <o:KSOProductBuildVer dt:dt="string">1033-10.1.0.5672</o:KSOProductBuildVer>
+	</o:CustomDocumentProperties>
+	</xml>
+	<![endif]-->
+	<style>
+	@page{
+		mso-page-orientation: ${config.orientation} ;
+		size:${config.orientation == 'potrait'? `${config.height}cm ${config.width}cm` : `${config.width}cm ${config.height}cm`};
+		margin:${config.margin.top}cm ${config.margin.right}cm ${config.margin.bottom}cm ${config.margin.left}cm;
+		font-size:12.0pt;
+	}
+	</style>
+  <!--[if gte mso 9]>
+   <xml>
+    <x:ExcelWorkbook>
+     <x:ExcelWorksheets>
+      <x:ExcelWorksheet>
+       <x:Name>Sheet1</x:Name>
+       <x:WorksheetOptions>
+        <x:StandardWidth>2252</x:StandardWidth>
+        <x:Selected/>
+        <x:Panes>
+         <x:Pane>
+          <x:Number>3</x:Number>
+          <x:ActiveCol>0</x:ActiveCol>
+          <x:ActiveRow>0</x:ActiveRow>
+         </x:Pane>
+        </x:Panes>
+        <x:ProtectContents>False</x:ProtectContents>
+        <x:ProtectObjects>False</x:ProtectObjects>
+        <x:ProtectScenarios>False</x:ProtectScenarios>
+        <x:PageBreakZoom>100</x:PageBreakZoom>
+        <x:Print>
+         <x:PaperSizeIndex>9</x:PaperSizeIndex>
+        </x:Print>
+       </x:WorksheetOptions>
+      </x:ExcelWorksheet>
+     </x:ExcelWorksheets>
+     <x:ProtectStructure>False</x:ProtectStructure>
+     <x:ProtectWindows>False</x:ProtectWindows>
+     <x:WindowHeight>6120</x:WindowHeight>
+     <x:WindowWidth>10860</x:WindowWidth>
+    </x:ExcelWorkbook>
+    <x:SupBook>
+     <x:Path>/tmp/</x:Path>
+    </x:SupBook>
+   </xml>
+  <![endif]-->
+</head>
+<body>
+	${$(el).outerHTML}
+</body>
+</html>`;
+				var content = 'data:application/vnd.ms-excel;charset=utf-8,' + encodeURIComponent(template);
+				var name = config.title+'.xls';
+				var file = document.createElement("a");
+				document.body.appendChild(file);
+				file.href = content;
+				file.download = name;
+				file.click();
+				document.body.removeChild(file);
+
+			}
+		},
+	});
+
+
+
+</script>
+</body>
+</html>

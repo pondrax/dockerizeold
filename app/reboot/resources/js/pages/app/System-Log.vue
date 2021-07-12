@@ -141,7 +141,7 @@
 				info:{
 					drawer: false,
 					loading: true,
-					filter: true,
+					filter: false,
 					selections: [],
 				}
 			};

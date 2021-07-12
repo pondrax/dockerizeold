@@ -40,3 +40,50 @@ border-bottom: 1px solid #EBEEF5;
 .el-pagination{
 margin-top:5px;
 }
+.filterbar {
+    margin: 10px -15px 15px;
+    padding: 0 15px;
+    border-bottom: 10px solid #eee;
+}
+.el-form--label-top .el-form-item__label {
+    position: absolute;
+    margin: -8px 10px;
+    padding: 0 5px;
+    z-index: 1;
+    font-size: 12px;
+    background: #fff;
+    line-height: 1;
+    color: #82848a;
+}
+.el-header {
+color: #333;
+line-height: 50px;
+border-bottom:1px #ddd solid;
+background:#fff;
+}
+.el-aside {
+width: 200px !important;
+color: #DBDBDB;
+background: rgb(84, 92, 100);
+}
+.el-aside.collapse {
+width: 60px !important;
+}
+.el-aside .sidebar-title{
+padding:10px 20px;
+}
+.el-aside.collapse .sidebar-title{
+padding:10px 12px;
+}
+.el-aside.collapse .sidebar-title span{
+display:none;
+}
+.el-main{
+padding:0;
+}
+.el-footer{
+margin:15px;
+text-align:center;
+color: #333;
+font-size:12px;
+}

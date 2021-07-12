@@ -8,6 +8,7 @@ export default {
 			save 	: 'Simpan',
 			add 	: 'Tambah',
 			edit	: 'Ubah',
+			filter	: 'Filter box',
 			delete	: 'Hapus',
 			export	: 'Ekspor',
 			generator: 'Generator'

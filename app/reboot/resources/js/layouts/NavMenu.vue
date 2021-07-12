@@ -1,7 +1,7 @@
 <template>
 	<el-menu
 		:collapse="collapse"
-		:default-active="$root.page"
+		:default-active="$root.page.split('/')[0]"
 		text-color="#fff"
 		background-color="#545c64"
 		active-text-color="#ffd04b"
@@ -87,13 +87,14 @@
 						var appMenu = [];
 						appData.forEach(a=>{
 							var menu = a.menu.split(' -> ');
+							var routing = a.route[0].route.replace('app/','');
 							var tmp	= {
 								name:menu[1],
 								route: a.route,
 								route_menu:
 									menu[1].toLowerCase()
 									+ '/'
-									+ a.route[0].route.replace('app/','').split('{')[0]
+									+ routing.split('/')[0]
 							};
 							// has top menu
 							var index = appMenu.findIndex(m=>m.name == menu[0]);
@@ -103,7 +104,7 @@
 								appMenu.push({name:menu[0],icon:a.icon,submenu: [tmp]});
 							}
 						})
-						console.log(appMenu);
+						//console.log(appMenu);
 						this.appMenu = appMenu
 					})
 			},
