@@ -23,7 +23,8 @@ You will need:
 
 * [Docker CE](https://docs.docker.com/engine/installation/)
 * [Docker Compose](https://docs.docker.com/compose/install)
-* Git (optional)
+* [Git](https://git-scm.com/download) (optional)
+* [Dnsmasq](https://thekelleys.org.uk/dnsmasq/doc.html) (optional)
 
 ## How to use it
 
@@ -107,3 +108,18 @@ You can execute any command on the `php` container as you would do on any docker
 You can execute any command on the `npm` container as you would do on any docker-compose container:
 
 `docker-compose exec php npm -v`
+
+
+### Configurations
+
+By default `localhost` will serve public directory at `/app/default`
+Every folder inside `/app` directory can be reached by wildcard domain `folder.test` such as `default.test` for default directory.
+
+Must have dnsmasq installed
+`/etc/dnsmasq.conf
+
+address=/test/127.0.0.1
+server=8.8.8.8
+
+`
+
