@@ -33,9 +33,9 @@ Checkout the repository or download the sources.
 
 Before start, be sure to copy .env.example to .env on the root directory
 
-Simply run `./stack generate` and you are done. All of the lumen dependency will be automatically installed
+Simply run `./stack start` and you are done.
 
-The app will be available on `localhost` and PostgreSQL on `localhost:5432`
+The app will be available on `localhost` serving /app/default/public directory and PostgreSQL on `localhost:5432`
 
 
 ### Using Stack
