@@ -1,35 +1,51 @@
 #!/bin/sh
 
 echo "Docker $@"
-if [ "$1" = "generate" ]; then
+if [ "$1" = "build" ]; then
 	if [ ! -f ".env" ]; then
 		cp .env.example .env
 	fi
-	
-	docker-compose up -d
-	docker-compose exec php composer install
-	docker-compose exec php cp /src/.env /src/app/.env
-	docker-compose exec php /src/app/artisan jwt:secret
-	docker-compose exec php /src/app/artisan migrate
-
-elif [ "$1" = "build" ]; then
-	docker-compose build
+	docker-compose build php
 
 elif [ "$1" = "start" ]; then
+	if [ ! -f ".env" ]; then
+		cp .env.example .env
+	fi
+	docker-compose up -d
+
+elif [ "$1" = "restart" ]; then
+	docker-compose down
 	docker-compose up -d
 
 elif [ "$1" = "stop" ]; then
 	docker-compose down
 
-elif [ "$1" = "composer" ]; then
-	docker-compose exec php "$@"
-
-elif [ "$1" = "artisan" ]; then
-	docker-compose exec php "./$@"
-
-elif [ "$1" = "sh" ]; then
-	docker-compose exec php sh
-
 else
-	docker-compose exec "$@"
+	string="composer artisan npm sh"
+	if [ "${string#*$1}" != "$string" ];then
+		workdir="/src/app/default"
+	else
+		workdir="/src/app/$1"
+		shift
+	fi
+
+	echo "Workdir : $workdir"
+
+	if [ "$1" = "composer" ]; then
+		docker-compose exec -w "$workdir" php "$@"
+
+	elif [ "$1" = "artisan" ]; then
+		docker-compose exec -w "$workdir" php "./$@"
+
+	elif [ "$1" = "npm" ]; then
+		docker-compose exec -w "$workdir" php "$@"
+
+	elif [ "$1" = "sh" ]; then
+		docker-compose exec -w "$workdir" php "$@"
+
+	else
+		docker-compose exec -w "$workdir" "$@"
+
+	fi
+
 fi

@@ -1,4 +1,4 @@
-version: '3'
+version: '3.6'
 services:
     web:
         image: nginx:1.19-alpine
@@ -18,18 +18,14 @@ services:
 
     php:
         build: .
-        #image: hermsi/alpine-fpm-php:7.4
         restart: always
         working_dir: /src/app
         volumes:
             - ./docker/conf/php/php.ini:/usr/local/etc/php/conf.d/php.ini
             - .:/src
-     
+        ports:
+            - 3000-3010:3000-3010
 
-    node:
-        image: node:12-alpine
-        #command: npm install
-     
     db:
         image: postgres:11.1-alpine
         restart: always
@@ -40,13 +36,13 @@ services:
         ports:
             - 5432:5432
         volumes:
-            #- ./docker/conf/postgres/:/docker-entrypoint-initdb.d/
+            - ./docker/conf/postgres/:/docker-entrypoint-initdb.d/
             - ./docker/conf/postgres/data/:/var/lib/postgresql/data/
 
-    
+
     cache:
         image: redis:6.2-alpine
         restart: always
         #ports:
             #- 6379:6379
-          
+

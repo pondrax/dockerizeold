@@ -1,5 +1,5 @@
 # Dockerize
-Docker Compose to run lumen API
+Docker Compose setup to run multiple app service
 
 ## Overview
 
@@ -8,10 +8,12 @@ Built in latest lumen 8, with fast and extensible services
 It exposes services:
 
 * web (nginx:1.19-alpine)
-* php (hermsi/alpine-fpm-php:7.4) 
+* php (hermsi/alpine-fpm-php:7.4)
+** composer
+** npm (nodejs:12) [optional]
+** openjdk11 [optional]
 * db (postgres:11.1-alpine)
 * cache (redis:6.2-alpine)
-* composer
 
 ## Install prerequisites
 
@@ -33,44 +35,41 @@ Before start, be sure to copy .env.example to .env on the root directory
 
 Simply run `./stack generate` and you are done. All of the lumen dependency will be automatically installed
 
-The app will be available on `localhost:8080` and PostgreSQL on `localhost:5434`
+The app will be available on `localhost` and PostgreSQL on `localhost:5432`
 
 
 ### Using Stack
 
-Some of stack shortcut instead of using docker-compose. Be surre to add this script to executable mode `chmod +x stack`
+Some of stack shortcut instead of using docker-compose. Be sure to add this script to executable mode `chmod +x stack`
 
-	- `./stack generate` 
-		Build, generate config needed then run service on background
-		
-	- `./stack generateonly` 
-		Generate config needed to run well
-		
-	- `./stack build` 
-		Build only
-	
-	- `./stack start` 
+	- `./stack build`
+		Build only php module
+
+	- `./stack start`
 		Start the service
-		
-	- `./stack stop` 
+
+	- `./stack stop`
 		Stop the service
-		
-	- `./stack artisan <cmd>` 
-		Simple shortcut to execute lumen artisan
-		
-	- `./stack composer <cmd>` 
+
+	- `./stack <workdir> composer <cmd>`
 		Simple shortcut to execute composer
-		
-	- `./stack sh` 
+
+	- `./stack <workdir> artisan <cmd>`
+		Simple shortcut to execute artisan
+
+	- `./stack <workdir> npm <cmd>`
+		Simple shortcut to execute node module
+
+	- `./stack <workdir> sh`
 		Run inside docker-compose interactively
-		
-	- `./stack <cmd>` 
+
+	- `./stack <cmd>`
 		Shortcut for docker compose exec
 
 
 ### Api Test
 
-Try all available API function with `localhost:8080/apix/`
+Try all available API function with `localhost`
 
 
 
@@ -78,9 +77,9 @@ Try all available API function with `localhost:8080/apix/`
 
 Checkout the repository or download the sources.
 
-Simply run `docker-compose up` and you are done.
+Simply run `docker-compose up` or with -d to run as daemon service then you are done.
 
-Nginx will be available on `localhost:8080` and PostgreSQL on `localhost:5434`.
+Nginx will be available on `localhost` and PostgreSQL on `localhost:5432`.
 
 
 ### Using PostgreSQL
@@ -101,3 +100,10 @@ If you want to connect to the DB from another container (from the `php` one for 
 You can execute any command on the `php` container as you would do on any docker-compose container:
 
 `docker-compose exec php php -v`
+
+
+### Using Nodejs
+
+You can execute any command on the `npm` container as you would do on any docker-compose container:
+
+`docker-compose exec php npm -v`
